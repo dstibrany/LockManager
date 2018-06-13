@@ -1,99 +1,71 @@
 package lockmanager;
 
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.locks.LockSupport;
-
 class Lock {
-    private ConcurrentLinkedDeque<LockTuple> waitQueue = new ConcurrentLinkedDeque<>();
-    private Boolean locked = false;
-    private Integer readCount = 0;
-    private String mode;
+    private int xLockCount = 0;
+    private int sLockCount = 0;
+    private Thread xOwner;
 
-    void acquire(String lockRequestMode) {
-        Thread current = Thread.currentThread();
+    void acquire(String mode) throws InterruptedException {
+        if (xOwner == Thread.currentThread()) return;
 
-        waitQueue.add(new LockTuple(current, lockRequestMode));
-        if (lockRequestMode.equals("S")) {
+        if ("S".equals(mode)) {
             acquireSLock();
-            mode = "S";
-        } else {
+        } else if ("X".equals(mode)) {
             acquireXLock();
-            mode = "X";
+        } else {
+            throw new RuntimeException("Lock mode does not exist");
         }
-        waitQueue.remove();
     }
 
     synchronized void release() {
-        if (mode.equals("X")) {
-            locked = false;
-            if (waitQueue.peek().getRequestMode().equals("X")) {
-                LockSupport.unpark(waitQueue.peek().getThread());
-            } else {
-                Iterator<LockTuple> i = waitQueue.iterator();
-                while (i.hasNext()) {
-                    LockTuple next = i.next();
-                    if (!next.getRequestMode().equals("S")) break;
-                    synchronized (this) {
-                        LockSupport.unpark(next.getThread());
-                    }
-                }
-            }
-        } else if (mode.equals("S")) {
-            readCount--;
-            if (waitQueue.peek() != null) {
-                LockSupport.unpark(waitQueue.peek().getThread());
-            }
+        if (sLockCount > 0) {
+            sLockCount--;
         }
-    }
-
-    private void acquireSLock() {
-        while (!s()) {
-            LockSupport.park();
+        if (xLockCount == 1) {
+            xLockCount = 0;
+            xOwner = null;
         }
+
+        this.notifyAll();
     }
 
-    private void acquireXLock() {
-        while (!x()) {
-            LockSupport.park();
+    synchronized void upgrade() throws InterruptedException {
+        if (xOwner == Thread.currentThread()) return;
+
+        while (isXLocked() || sLockCount > 1) {
+            this.wait();
         }
+        sLockCount = 0;
+        xLockCount = 1;
     }
 
-    private synchronized boolean s() {
-        Thread current = Thread.currentThread();
-        if (!locked && waitQueue.peek().getThread() == current) {
-            readCount++;
-            return true;
+    synchronized String getMode() {
+        if (isXLocked()) return "X";
+        else if (isSLocked()) return "S";
+        else return null;
+    }
+
+    // TODO: prevent barging
+    private synchronized void acquireSLock() throws InterruptedException {
+        while (isXLocked()) {
+           this.wait();
         }
-        return false;
+        sLockCount++;
     }
 
-    private synchronized boolean x() {
-        Thread current = Thread.currentThread();
-        if (!locked && readCount == 0 && waitQueue.peek().getThread() == current) {
-            locked = true;
-            return true;
+    private synchronized void acquireXLock() throws InterruptedException {
+        while (isXLocked() || isSLocked()) {
+            this.wait();
         }
-        return false;
+        xLockCount = 1;
+        xOwner = Thread.currentThread();
     }
 
-}
-
-class LockTuple {
-    private Thread thread;
-    private String requestMode;
-
-    LockTuple(Thread thread, String requestMode) {
-        this.thread = thread;
-        this.requestMode = requestMode;
+    private boolean isXLocked() {
+        return xLockCount == 1;
     }
 
-    Thread getThread() {
-        return thread;
-    }
-
-    String getRequestMode() {
-        return requestMode;
+    private boolean isSLocked() {
+        return sLockCount > 0;
     }
 }
-
