@@ -114,13 +114,14 @@ class IntegrationTest {
         assertFalse(lm.hasLock(txn5, lockObj));
         waiter2.await(WAIT_DELAY);
         waiter3.await(WAIT_DELAY);
-        waiter5.await(WAIT_DELAY);
         assertTrue(lm.hasLock(txn2, lockObj));
         assertTrue(lm.hasLock(txn3, lockObj));
-        assertTrue(lm.hasLock(txn5, lockObj));
+        assertFalse(lm.hasLock(txn5, lockObj));
         assertFalse(lm.hasLock(txn4, lockObj));
         waiter4.await(WAIT_DELAY);
         assertTrue(lm.hasLock(txn4, lockObj));
+        waiter5.await(WAIT_DELAY);
+        assertTrue(lm.hasLock(txn5, lockObj));
     }
 
     @Test
@@ -142,6 +143,36 @@ class IntegrationTest {
         assertTrue(lm.hasLock(txn1, lockObj));
         waiter2.await(WAIT_DELAY);
         assertTrue(lm.hasLock(txn2, lockObj));
+    }
+
+    @Test
+    void preventBarging() throws Throwable {
+        Integer lockObj = 55;
+        Integer txn1 = 1;
+        Integer txn2 = 2;
+        Integer txn3 = 3;
+        Waiter waiter1 = new Waiter();
+        Waiter waiter2 = new Waiter();
+        Waiter waiter3 = new Waiter();
+        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "S", waiter1));
+        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "X", waiter2));
+        Thread t3 = new Thread(new Transaction(lm, txn3, lockObj, "S", waiter3));
+
+        t1.start();
+        Thread.sleep(SLEEP_DELAY);
+        t2.start();
+        Thread.sleep(SLEEP_DELAY);
+        t3.start();
+
+        waiter1.await(WAIT_DELAY);
+        assertTrue(lm.hasLock(txn1, lockObj));
+        assertFalse(lm.hasLock(txn2, lockObj));
+        assertFalse(lm.hasLock(txn3, lockObj));
+        waiter2.await(WAIT_DELAY);
+        assertTrue(lm.hasLock(txn2, lockObj));
+        assertFalse(lm.hasLock(txn3, lockObj));
+        waiter3.await(WAIT_DELAY);
+        assertTrue(lm.hasLock(txn3, lockObj));
     }
 }
 

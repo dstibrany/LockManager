@@ -66,11 +66,10 @@ class Lock extends ReentrantLock{
         return mode;
     }
 
-    // TODO: prevent barging
     private void acquireSLock() throws InterruptedException {
         lock.lock();
         try {
-            while (isXLocked()) {
+            while (isXLocked() || lock.hasWaiters(waiters)) {
                 waiters.await();
             }
             sLockCount++;
