@@ -95,6 +95,48 @@ class LockManagerTest {
     }
 
     @Test
+    void upgradeBlockedBySLock() throws Throwable {
+        final Waiter waiter = new Waiter();
+
+        lm.lock(lockName, txid, "S");
+
+        new Thread(() -> {
+            try {
+                lm.lock(lockName, 2, "S");
+                lm.lock(lockName, 2, "X");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            waiter.resume(); // should not get here
+        }).start();
+
+        assertThrows(TimeoutException.class, () -> {
+            waiter.await(10);
+        }, "Lock was acquired, but should have been blocked");
+    }
+
+    @Test
+    void upgradeBlockedByXLock() throws Throwable {
+        final Waiter waiter = new Waiter();
+
+        lm.lock(lockName, txid, "X");
+
+        new Thread(() -> {
+            try {
+                lm.lock(lockName, 2, "S");
+                lm.lock(lockName, 2, "X");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            waiter.resume(); // should not get here
+        }).start();
+
+        assertThrows(TimeoutException.class, () -> {
+            waiter.await(10);
+        }, "Lock was acquired, but should have been blocked");
+    }
+
+    @Test
     void removeTransactionWithSLock() throws Throwable {
         lm.lock(lockName, txid, "S");
         lm.removeTransaction(txid);
