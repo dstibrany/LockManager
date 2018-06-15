@@ -1,4 +1,4 @@
-# Lock Manager
+# LockManager
 
 - Requests come in to the lock manager to grab read or write locks on objects for specific transactions
 - keep track of which locks a txn has
