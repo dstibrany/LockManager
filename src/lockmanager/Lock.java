@@ -52,20 +52,6 @@ class Lock extends ReentrantLock{
         }
     }
 
-    String getMode() {
-        String mode = null;
-        lock.lock();
-
-        try {
-            if (isXLocked()) mode =  "X";
-            else if (isSLocked()) mode = "S";
-        } finally {
-            lock.unlock();
-        }
-
-        return mode;
-    }
-
     private void acquireSLock() throws InterruptedException {
         lock.lock();
         try {
@@ -89,6 +75,20 @@ class Lock extends ReentrantLock{
         } finally {
            lock.unlock();
         }
+    }
+
+    String getMode() {
+        String mode = null;
+        lock.lock();
+
+        try {
+            if (isXLocked()) mode =  "X";
+            else if (isSLocked()) mode = "S";
+        } finally {
+            lock.unlock();
+        }
+
+        return mode;
     }
 
     private boolean isXLocked() {

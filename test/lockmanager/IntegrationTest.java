@@ -18,12 +18,12 @@ class IntegrationTest {
     @Test
     void sLockWaitsOnXLock() throws Throwable {
         Integer lockObj = 55;
-        Integer txn1 = 1;
-        Integer txn2 = 2;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
-        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "X", waiter1));
-        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "S", waiter2));
+        Thread t1 = new Thread(new TransactionTest(lm, txn1, lockObj, "X", waiter1));
+        Thread t2 = new Thread(new TransactionTest(lm, txn2, lockObj, "S", waiter2));
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
@@ -39,12 +39,12 @@ class IntegrationTest {
     @Test
     void sLockNoWaitOnSLock() throws Throwable {
         Integer lockObj = 55;
-        Integer txn1 = 1;
-        Integer txn2 = 2;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
-        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "S", waiter1));
-        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "S", waiter2));
+        Thread t1 = new Thread(new TransactionTest(lm, txn1, lockObj, "S", waiter1));
+        Thread t2 = new Thread(new TransactionTest(lm, txn2, lockObj, "S", waiter2));
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
@@ -59,12 +59,12 @@ class IntegrationTest {
     @Test
     void xLockWaitsOnSLock() throws Throwable {
         Integer lockObj = 55;
-        Integer txn1 = 1;
-        Integer txn2 = 2;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
-        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "S", waiter1));
-        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "X", waiter2));
+        Thread t1 = new Thread(new TransactionTest(lm, txn1, lockObj, "S", waiter1));
+        Thread t2 = new Thread(new TransactionTest(lm, txn2, lockObj, "X", waiter2));
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
@@ -80,21 +80,21 @@ class IntegrationTest {
     @Test
     void lockSequence() throws Throwable {
         Integer lockObj = 55;
-        Integer txn1 = 1;
-        Integer txn2 = 2;
-        Integer txn3 = 3;
-        Integer txn4 = 4;
-        Integer txn5 = 5;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
+        Transaction txn3 = new Transaction(3);
+        Transaction txn4 = new Transaction(4);
+        Transaction txn5 = new Transaction(5);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
         Waiter waiter3 = new Waiter();
         Waiter waiter4 = new Waiter();
         Waiter waiter5 = new Waiter();
-        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "X", waiter1));
-        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "S", waiter2));
-        Thread t3 = new Thread(new Transaction(lm, txn3, lockObj, "S", waiter3));
-        Thread t4 = new Thread(new Transaction(lm, txn4, lockObj, "X", waiter4));
-        Thread t5 = new Thread(new Transaction(lm, txn5, lockObj, "S", waiter5));
+        Thread t1 = new Thread(new TransactionTest(lm, txn1, lockObj, "X", waiter1));
+        Thread t2 = new Thread(new TransactionTest(lm, txn2, lockObj, "S", waiter2));
+        Thread t3 = new Thread(new TransactionTest(lm, txn3, lockObj, "S", waiter3));
+        Thread t4 = new Thread(new TransactionTest(lm, txn4, lockObj, "X", waiter4));
+        Thread t5 = new Thread(new TransactionTest(lm, txn5, lockObj, "S", waiter5));
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
@@ -127,12 +127,12 @@ class IntegrationTest {
     @Test
     void upgradeHappensBeforeXLock() throws Throwable {
         Integer lockObj = 55;
-        Integer txn1 = 1;
-        Integer txn2 = 2;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
-        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "U", waiter1));
-        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "X", waiter2));
+        Thread t1 = new Thread(new TransactionTest(lm, txn1, lockObj, "U", waiter1));
+        Thread t2 = new Thread(new TransactionTest(lm, txn2, lockObj, "X", waiter2));
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
@@ -148,15 +148,15 @@ class IntegrationTest {
     @Test
     void preventBarging() throws Throwable {
         Integer lockObj = 55;
-        Integer txn1 = 1;
-        Integer txn2 = 2;
-        Integer txn3 = 3;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
+        Transaction txn3 = new Transaction(3);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
         Waiter waiter3 = new Waiter();
-        Thread t1 = new Thread(new Transaction(lm, txn1, lockObj, "S", waiter1));
-        Thread t2 = new Thread(new Transaction(lm, txn2, lockObj, "X", waiter2));
-        Thread t3 = new Thread(new Transaction(lm, txn3, lockObj, "S", waiter3));
+        Thread t1 = new Thread(new TransactionTest(lm, txn1, lockObj, "S", waiter1));
+        Thread t2 = new Thread(new TransactionTest(lm, txn2, lockObj, "X", waiter2));
+        Thread t3 = new Thread(new TransactionTest(lm, txn3, lockObj, "S", waiter3));
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
@@ -176,14 +176,14 @@ class IntegrationTest {
     }
 }
 
-class Transaction implements Runnable {
+class TransactionTest implements Runnable {
     private LockManager lm;
-    private int txn;
+    private Transaction txn;
     private int obj;
     private String mode;
     private Waiter waiter;
 
-    Transaction(LockManager lm, int txn, int obj, String mode, Waiter waiter) {
+    TransactionTest(LockManager lm, Transaction txn, int obj, String mode, Waiter waiter) {
         this.lm = lm;
         this.txn = txn;
         this.obj = obj;
@@ -202,7 +202,9 @@ class Transaction implements Runnable {
     private void lock() {
         try {
             lm.lock(obj, txn, mode);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         System.out.println("Txn: " + txn + " has the lock");
         waiter.resume();
 
@@ -219,7 +221,9 @@ class Transaction implements Runnable {
     private void upgrade() {
         try {
             lm.lock(obj, txn, "S");
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         System.out.println("Txn: " + txn + " has the Slock");
 
@@ -231,7 +235,9 @@ class Transaction implements Runnable {
 
         try {
             lm.lock(obj, txn, "X");
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         System.out.println("Txn: " + txn + " has the Xlock");
 

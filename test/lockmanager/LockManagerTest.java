@@ -4,45 +4,44 @@ import net.jodah.concurrentunit.Waiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LockManagerTest {
-    private Integer txid;
+    private Transaction txn;
     private Integer lockName;
     private LockManager lm;
 
     @BeforeEach
     void init() {
-        txid = 1;
+        txn = new Transaction(1);
         lockName = 123;
         lm = new LockManager();
     }
 
     @Test
     void getSLock() throws InterruptedException {
-        lm.lock(lockName, txid, "S");
-        assertTrue(lm.hasLock(txid, lockName));
+        lm.lock(lockName, txn, "S");
+        assertTrue(lm.hasLock(txn, lockName));
         assertEquals("S", lm.getLockMode(lockName));
     }
 
     @Test
     void getXLock() throws InterruptedException {
-        lm.lock(lockName, txid, "X");
-        assertTrue(lm.hasLock(txid, lockName));
+        lm.lock(lockName, txn, "X");
+        assertTrue(lm.hasLock(txn, lockName));
         assertEquals("X", lm.getLockMode(lockName));
     }
 
     @Test
     void xLockBlocksSLock() throws Throwable {
         final Waiter waiter = new Waiter();
-        lm.lock(lockName, txid, "X");
+        lm.lock(lockName, txn, "X");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "S");
+                lm.lock(lockName, new Transaction(2), "S");
             } catch (InterruptedException e) {}
 
             waiter.resume(); // should not get here
@@ -56,11 +55,11 @@ class LockManagerTest {
     @Test
     void xLockBlocksXLock() throws Throwable {
         final Waiter waiter = new Waiter();
-        lm.lock(lockName, txid, "X");
+        lm.lock(lockName, txn, "X");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "X");
+                lm.lock(lockName, new Transaction(2), "X");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -76,11 +75,11 @@ class LockManagerTest {
     void sLockDoesNotBlockSLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txid, "S");
+        lm.lock(lockName, txn, "S");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "S");
+                lm.lock(lockName, new Transaction(2), "S");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -98,12 +97,12 @@ class LockManagerTest {
     void upgradeBlockedBySLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txid, "S");
+        lm.lock(lockName, txn, "S");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "S");
-                lm.lock(lockName, 2, "X");
+                lm.lock(lockName, new Transaction(2), "S");
+                lm.lock(lockName, new Transaction(2), "X");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -119,12 +118,12 @@ class LockManagerTest {
     void upgradeBlockedByXLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txid, "X");
+        lm.lock(lockName, txn, "X");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "S");
-                lm.lock(lockName, 2, "X");
+                lm.lock(lockName,  new Transaction(2), "S");
+                lm.lock(lockName, new Transaction(2), "X");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -138,27 +137,27 @@ class LockManagerTest {
 
     @Test
     void removeTransactionWithSLock() throws Throwable {
-        lm.lock(lockName, txid, "S");
-        lm.removeTransaction(txid);
-        assertFalse(lm.hasLock(txid, lockName));
+        lm.lock(lockName, txn, "S");
+        lm.removeTransaction(txn);
+        assertFalse(lm.hasLock(txn, lockName));
     }
 
     @Test
     void removeTransactionWithXLock() throws Throwable {
-        lm.lock(lockName, txid, "X");
-        lm.removeTransaction(txid);
-        assertFalse(lm.hasLock(txid, lockName));
+        lm.lock(lockName, txn, "X");
+        lm.removeTransaction(txn);
+        assertFalse(lm.hasLock(txn, lockName));
     }
 
     @Test
     void removeXLockUnblocksSLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txid, "X");
+        lm.lock(lockName, txn, "X");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "S");
+                lm.lock(lockName, new Transaction(2), "S");
             } catch(InterruptedException e) {}
 
             waiter.resume();
@@ -168,7 +167,7 @@ class LockManagerTest {
             waiter.await(10);
         }, "Lock was acquired, but should have been blocked");
 
-        lm.removeTransaction(txid);
+        lm.removeTransaction(txn);
 
         try {
             waiter.await(10);
@@ -176,18 +175,18 @@ class LockManagerTest {
             fail("S lock was not acquired after X lock was released");
         }
 
-        assertFalse(lm.hasLock(txid, lockName));
+        assertFalse(lm.hasLock(txn, lockName));
     }
 
     @Test
     void removeXLockUnblocksXLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txid, "X");
+        lm.lock(lockName, txn, "X");
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, 2, "X");
+                lm.lock(lockName, new Transaction(2), "X");
             } catch(InterruptedException e) {}
 
             waiter.resume();
@@ -197,7 +196,7 @@ class LockManagerTest {
             waiter.await(10);
         }, "Lock was acquired, but should have been blocked");
 
-        lm.removeTransaction(txid);
+        lm.removeTransaction(txn);
 
         try {
             waiter.await(10);
@@ -205,19 +204,19 @@ class LockManagerTest {
             fail("Second X lock was not acquired after first X lock was released");
         }
 
-        assertFalse(lm.hasLock(txid, lockName));
+        assertFalse(lm.hasLock(txn, lockName));
     }
 
     @Test
     void allLocksAreReleased() throws InterruptedException {
         Integer[] locks = {1, 2, 3, 4};
         for (int lockName: locks) {
-            lm.lock(lockName, txid, "S");
+            lm.lock(lockName, txn, "S");
         }
-        lm.removeTransaction(txid);
+        lm.removeTransaction(txn);
 
         for (int lockName: locks) {
-            assertFalse(lm.hasLock(txid, lockName));
+            assertFalse(lm.hasLock(txn, lockName));
         }
     }
 }
