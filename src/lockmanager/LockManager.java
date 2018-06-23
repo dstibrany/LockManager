@@ -18,10 +18,10 @@ class LockManager {
            return;
        }
        else if (requestedMode.equals("X") && hasLock(txn, lockName) && lock.getMode().equals("S")) {
-           lock.upgrade();
+           lock.upgrade(txn);
        }
        else {
-           lock.acquire(requestedMode);
+           lock.acquire(txn, requestedMode);
        }
 
        txnTable.putIfAbsent(txn, new ArrayList<>());
@@ -34,7 +34,7 @@ class LockManager {
         ArrayList<Lock> txnLockList = txnTable.get(txn);
 
         for (Lock lock: txnLockList) {
-            lock.release();
+            lock.release(txn);
         }
 
         txnTable.remove(txn);
