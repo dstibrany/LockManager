@@ -3,6 +3,10 @@ package lockmanager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class WaitForGraphTest {
@@ -17,25 +21,18 @@ class WaitForGraphTest {
     }
 
     @Test
-    void addEdge() {
-        graph.addEdge(txn1, txn2);
+    void add() {
+        graph.add(txn1, new HashSet<>(Arrays.asList(txn2, txn3)));
         assertTrue(graph.hasEdge(txn1, txn2));
         assertFalse(graph.hasEdge(txn2, txn1));
-        assertFalse(graph.hasEdge(txn1, txn3));
+        assertTrue(graph.hasEdge(txn1, txn3));
         assertFalse(graph.hasEdge(txn3, txn1));
     }
 
     @Test
-    void removeVertex() {
-        graph.addEdge(txn1, txn2);
-        graph.removeVertex(txn1);
-        assertFalse(graph.hasEdge(txn1, txn2));
-    }
-
-    @Test
-    void removeEdge() {
-        graph.addEdge(txn1, txn2);
-        graph.removeEdge(txn1, txn2);
+    void remove() {
+        graph.add(txn1, new HashSet<>(Collections.singletonList(txn2)));
+        graph.remove(txn1);
         assertFalse(graph.hasEdge(txn1, txn2));
     }
 }

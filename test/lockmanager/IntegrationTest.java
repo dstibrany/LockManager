@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntegrationTest {
+    static int DEBUG = 0;
     private LockManager lm;
     private final int SLEEP_DELAY = 20;
     private final int WAIT_DELAY = 1000;
@@ -191,6 +192,11 @@ class TransactionTest implements Runnable {
         this.waiter = waiter;
     }
 
+    private void debug(String msg) {
+        if (IntegrationTest.DEBUG == 1)
+            System.out.println(msg);
+    }
+
     public void run() {
         if (mode.equals("U")) {
             upgrade();
@@ -205,7 +211,7 @@ class TransactionTest implements Runnable {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        System.out.println("Txn: " + txn + " has the lock");
+        debug("Txn: " + txn + " has the lock");
         waiter.resume();
 
         try {
@@ -214,7 +220,7 @@ class TransactionTest implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " released the lock");
+        debug("Txn: " + txn + " released the lock");
         lm.removeTransaction(txn);
     }
 
@@ -225,7 +231,7 @@ class TransactionTest implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " has the Slock");
+        debug("Txn: " + txn + " has the Slock");
 
         try {
             Thread.sleep(100);
@@ -239,7 +245,7 @@ class TransactionTest implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " has the Xlock");
+        debug("Txn: " + txn + " has the Xlock");
 
         waiter.resume();
 
@@ -249,7 +255,7 @@ class TransactionTest implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " released the lock");
+        debug("Txn: " + txn + " released the lock");
         lm.removeTransaction(txn);
     }
 }

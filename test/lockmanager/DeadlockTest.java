@@ -12,6 +12,7 @@ class DeadlockTest {
     private LockManager lm;
     private final int SLEEP_DELAY = 20;
     private final int WAIT_DELAY = 1000;
+    static int DEBUG = 0;
 
     @BeforeEach
     void init() {
@@ -56,6 +57,12 @@ class DeadlockTransaction implements Runnable {
         this.waiter = waiter;
     }
 
+    private void debug(String msg) {
+        if (DeadlockTest.DEBUG == 1) {
+            System.out.println(msg);
+        }
+    }
+
     public void run() {
         if (mode.equals("U")) {
             upgrade();
@@ -70,7 +77,7 @@ class DeadlockTransaction implements Runnable {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        System.out.println("Txn: " + txn + " has the lock");
+        debug("Txn: " + txn + " has the lock");
         waiter.resume();
 
         try {
@@ -79,7 +86,7 @@ class DeadlockTransaction implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " released the lock");
+        debug("Txn: " + txn + " released the lock");
         lm.removeTransaction(txn);
     }
 
@@ -90,7 +97,7 @@ class DeadlockTransaction implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " has the sLock");
+        debug("Txn: " + txn + " has the sLock");
 
         try {
             Thread.sleep(100);
@@ -104,7 +111,7 @@ class DeadlockTransaction implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " has the xLock");
+        debug("Txn: " + txn + " has the xLock");
 
         waiter.resume();
 
@@ -114,7 +121,7 @@ class DeadlockTransaction implements Runnable {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("Txn: " + txn + " released the lock");
+        debug("Txn: " + txn + " released the lock");
         lm.removeTransaction(txn);
     }
 }

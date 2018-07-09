@@ -8,14 +8,12 @@ import java.util.concurrent.locks.ReentrantLock;
 class Lock extends ReentrantLock{
     private int xLockCount = 0;
     private int sLockCount = 0;
-    private Thread xOwner;
     private Set<Transaction> owners = new HashSet<>();
     final private ReentrantLock lock = new ReentrantLock(true);
     final private Condition waiters  = lock.newCondition();
+    private static WaitForGraph waitForGraph = WaitForGraph.getInstance();
 
     void acquire(Transaction txn, String mode) throws InterruptedException {
-        if (xOwner == Thread.currentThread()) return;
-
         if ("S".equals(mode)) {
             acquireSLock(txn);
         } else if ("X".equals(mode)) {
@@ -33,9 +31,11 @@ class Lock extends ReentrantLock{
             }
             if (xLockCount == 1) {
                 xLockCount = 0;
-                xOwner = null;
             }
+
             owners.remove(txn);
+            waitForGraph.remove(txn);
+
             waiters.signalAll();
         } finally {
             lock.unlock();
@@ -45,9 +45,9 @@ class Lock extends ReentrantLock{
     void upgrade(Transaction txn) throws InterruptedException {
         lock.lock();
         try {
-            if (xOwner == Thread.currentThread()) return;
+            if (owners.contains(txn) && isXLocked()) return;
             while (isXLocked() || sLockCount > 1) {
-                // add to wait graph
+                waitForGraph.add(txn, owners);
                 waiters.await();
             }
             sLockCount = 0;
@@ -62,7 +62,7 @@ class Lock extends ReentrantLock{
         lock.lock();
 
         try {
-            if (isXLocked()) mode =  "X";
+            if (isXLocked()) mode = "X";
             else if (isSLocked()) mode = "S";
         } finally {
             lock.unlock();
@@ -79,7 +79,7 @@ class Lock extends ReentrantLock{
         lock.lock();
         try {
             while (isXLocked() || lock.hasWaiters(waiters)) {
-                // add to wait graph
+                waitForGraph.add(txn, owners);
                 waiters.await();
             }
             sLockCount++;
@@ -93,12 +93,11 @@ class Lock extends ReentrantLock{
         lock.lock();
         try {
             while (isXLocked() || isSLocked()) {
-                // add to wait graph
+                waitForGraph.add(txn, owners);
                 waiters.await();
             }
             xLockCount = 1;
             owners.add(txn);
-            xOwner = Thread.currentThread();
         } finally {
            lock.unlock();
         }
@@ -111,4 +110,5 @@ class Lock extends ReentrantLock{
     private boolean isSLocked() {
         return sLockCount > 0;
     }
+
 }
