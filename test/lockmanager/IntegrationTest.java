@@ -201,11 +201,11 @@ class TransactionTest implements Runnable {
         if (mode.equals("U")) {
             upgrade();
         } else {
-            lock();
+            lock(mode.equals("S") ? Lock.LockMode.SHARED : Lock.LockMode.EXCLUSIVE);
         }
     }
 
-    private void lock() {
+    private void lock(Lock.LockMode mode) {
         try {
             lm.lock(obj, txn, mode);
         } catch (InterruptedException e) {
@@ -226,7 +226,7 @@ class TransactionTest implements Runnable {
 
     private void upgrade() {
         try {
-            lm.lock(obj, txn, "S");
+            lm.lock(obj, txn, Lock.LockMode.SHARED);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -240,7 +240,7 @@ class TransactionTest implements Runnable {
         }
 
         try {
-            lm.lock(obj, txn, "X");
+            lm.lock(obj, txn, Lock.LockMode.EXCLUSIVE);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

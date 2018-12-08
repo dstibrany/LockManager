@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LockTest {
     private Transaction txn1;
-    
+
     @BeforeEach
     void init() {
         txn1 = new Transaction(1);
@@ -15,12 +15,12 @@ class LockTest {
     @Test
     void acquire() throws InterruptedException {
         Lock sLock = new Lock();
-        sLock.acquire(txn1, "S");
-        assertEquals("S", sLock.getMode());
+        sLock.acquire(txn1, Lock.LockMode.SHARED);
+        assertEquals(Lock.LockMode.SHARED, sLock.getMode());
 
         Lock xLock = new Lock();
-        xLock.acquire(txn1, "X");
-        assertEquals("X", xLock.getMode());
+        xLock.acquire(txn1, Lock.LockMode.EXCLUSIVE);
+        assertEquals(Lock.LockMode.EXCLUSIVE, xLock.getMode());
 
         Lock lockNoMode = new Lock();
         assertThrows(RuntimeException.class, () -> {
@@ -34,11 +34,11 @@ class LockTest {
         lock.release(txn1);
         assertNull(lock.getMode());
 
-        lock.acquire(txn1,"S");
+        lock.acquire(txn1,Lock.LockMode.SHARED);
         lock.release(txn1);
         assertNull(lock.getMode());
 
-        lock.acquire(txn1,"X");
+        lock.acquire(txn1,Lock.LockMode.EXCLUSIVE);
         lock.release(txn1);
         assertNull(lock.getMode());
     }
@@ -47,28 +47,28 @@ class LockTest {
     void upgrade() throws InterruptedException {
         Lock lock = new Lock();
         lock.upgrade(txn1);
-        assertEquals("X", lock.getMode());
+        assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
 
         Lock lock2 = new Lock();
-        lock2.acquire(txn1,"S");
+        lock2.acquire(txn1,Lock.LockMode.SHARED);
         lock2.upgrade(txn1);
-        assertEquals("X", lock.getMode());
+        assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
 
         Lock lock3 = new Lock();
-        lock3.acquire(txn1, "X");
+        lock3.acquire(txn1, Lock.LockMode.EXCLUSIVE);
         lock3.upgrade(txn1);
-        assertEquals("X", lock.getMode());
+        assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
     }
 
     @Test
     void getMode() throws InterruptedException {
         Lock sLock = new Lock();
-        sLock.acquire(txn1,"S");
-        assertEquals("S", sLock.getMode());
+        sLock.acquire(txn1,Lock.LockMode.SHARED);
+        assertEquals(Lock.LockMode.SHARED, sLock.getMode());
 
         Lock xLock = new Lock();
-        xLock.acquire(txn1, "X");
-        assertEquals("X", xLock.getMode());
+        xLock.acquire(txn1, Lock.LockMode.EXCLUSIVE);
+        assertEquals(Lock.LockMode.EXCLUSIVE, xLock.getMode());
 
         Lock newLock = new Lock();
         assertNull(newLock.getMode());
@@ -77,7 +77,7 @@ class LockTest {
     @Test
     void getOwnersSLock() throws InterruptedException {
         Lock sLock = new Lock();
-        sLock.acquire(txn1,"S");
+        sLock.acquire(txn1,Lock.LockMode.SHARED);
         assertEquals(1, sLock.getOwners().size());
         sLock.release(txn1);
         assertEquals(0, sLock.getOwners().size());
@@ -86,7 +86,7 @@ class LockTest {
     @Test
     void getOwnersXLock() throws InterruptedException {
         Lock xLock = new Lock();
-        xLock.acquire(txn1,"X");
+        xLock.acquire(txn1,Lock.LockMode.EXCLUSIVE);
         assertEquals(1, xLock.getOwners().size());
         xLock.release(txn1);
         assertEquals(0, xLock.getOwners().size());
@@ -101,9 +101,9 @@ class LockTest {
 
         Lock sLock = new Lock();
 
-        sLock.acquire(t1, "S");
-        sLock.acquire(t2, "S");
-        sLock.acquire(t3, "S");
+        sLock.acquire(t1, Lock.LockMode.SHARED);
+        sLock.acquire(t2, Lock.LockMode.SHARED);
+        sLock.acquire(t3, Lock.LockMode.SHARED);
 
         assertEquals(3, sLock.getOwners().size());
 

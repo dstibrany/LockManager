@@ -5,7 +5,12 @@ import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-class Lock extends ReentrantLock{
+class Lock {
+    enum LockMode {
+        SHARED,
+        EXCLUSIVE
+    }
+
     private int xLockCount = 0;
     private int sLockCount = 0;
     private Set<Transaction> owners = new HashSet<>();
@@ -13,10 +18,10 @@ class Lock extends ReentrantLock{
     final private Condition waiters  = lock.newCondition();
     private static WaitForGraph waitForGraph = WaitForGraph.getInstance();
 
-    void acquire(Transaction txn, String mode) throws InterruptedException {
-        if ("S".equals(mode)) {
+    void acquire(Transaction txn, LockMode lockMode) throws InterruptedException {
+        if (LockMode.SHARED == lockMode) {
             acquireSLock(txn);
-        } else if ("X".equals(mode)) {
+        } else if (LockMode.EXCLUSIVE == lockMode) {
             acquireXLock(txn);
         } else {
             throw new RuntimeException("Lock mode does not exist");
@@ -57,18 +62,18 @@ class Lock extends ReentrantLock{
         }
     }
 
-    String getMode() {
-        String mode = null;
+    LockMode getMode() {
+        LockMode lockMode = null;
         lock.lock();
 
         try {
-            if (isXLocked()) mode = "X";
-            else if (isSLocked()) mode = "S";
+            if (isXLocked()) lockMode = LockMode.EXCLUSIVE;
+            else if (isSLocked()) lockMode = LockMode.SHARED;
         } finally {
             lock.unlock();
         }
 
-        return mode;
+        return lockMode;
     }
 
     Set<Transaction> getOwners() {

@@ -7,17 +7,17 @@ class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Transaction, ArrayList<Lock>> txnTable = new ConcurrentHashMap<>();
 
-   void lock(Integer lockName, Transaction txn, String requestedMode) throws InterruptedException {
+   void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws InterruptedException {
        lockTable.putIfAbsent(lockName, new Lock());
        Lock lock = lockTable.get(lockName);
 
-       if (requestedMode.equals("S") && hasLock(txn, lockName) && lock.getMode().equals("S")) {
+       if (requestedMode == Lock.LockMode.SHARED && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
            return;
        }
-       else if (requestedMode.equals("X") && hasLock(txn, lockName) && lock.getMode().equals("X")) {
+       else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.EXCLUSIVE) {
            return;
        }
-       else if (requestedMode.equals("X") && hasLock(txn, lockName) && lock.getMode().equals("S")) {
+       else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
            lock.upgrade(txn);
        }
        else {
@@ -54,7 +54,7 @@ class LockManager {
        return found;
    }
 
-   String getLockMode(Integer lockName) {
+   Lock.LockMode getLockMode(Integer lockName) {
        return lockTable.get(lockName).getMode();
    }
 }

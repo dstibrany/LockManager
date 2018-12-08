@@ -22,26 +22,26 @@ class LockManagerTest {
 
     @Test
     void getSLock() throws InterruptedException {
-        lm.lock(lockName, txn, "S");
+        lm.lock(lockName, txn, Lock.LockMode.SHARED);
         assertTrue(lm.hasLock(txn, lockName));
-        assertEquals("S", lm.getLockMode(lockName));
+        assertEquals(Lock.LockMode.SHARED, lm.getLockMode(lockName));
     }
 
     @Test
     void getXLock() throws InterruptedException {
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
         assertTrue(lm.hasLock(txn, lockName));
-        assertEquals("X", lm.getLockMode(lockName));
+        assertEquals(Lock.LockMode.EXCLUSIVE, lm.getLockMode(lockName));
     }
 
     @Test
     void xLockBlocksSLock() throws Throwable {
         final Waiter waiter = new Waiter();
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), "S");
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
             } catch (InterruptedException e) {}
 
             waiter.resume(); // should not get here
@@ -55,11 +55,11 @@ class LockManagerTest {
     @Test
     void xLockBlocksXLock() throws Throwable {
         final Waiter waiter = new Waiter();
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), "X");
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -75,11 +75,11 @@ class LockManagerTest {
     void sLockDoesNotBlockSLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txn, "S");
+        lm.lock(lockName, txn, Lock.LockMode.SHARED);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), "S");
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -97,12 +97,12 @@ class LockManagerTest {
     void upgradeBlockedBySLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txn, "S");
+        lm.lock(lockName, txn, Lock.LockMode.SHARED);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), "S");
-                lm.lock(lockName, new Transaction(2), "X");
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -118,12 +118,12 @@ class LockManagerTest {
     void upgradeBlockedByXLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName,  new Transaction(2), "S");
-                lm.lock(lockName, new Transaction(2), "X");
+                lm.lock(lockName,  new Transaction(2), Lock.LockMode.SHARED);
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -137,14 +137,14 @@ class LockManagerTest {
 
     @Test
     void removeTransactionWithSLock() throws Throwable {
-        lm.lock(lockName, txn, "S");
+        lm.lock(lockName, txn, Lock.LockMode.SHARED);
         lm.removeTransaction(txn);
         assertFalse(lm.hasLock(txn, lockName));
     }
 
     @Test
     void removeTransactionWithXLock() throws Throwable {
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
         lm.removeTransaction(txn);
         assertFalse(lm.hasLock(txn, lockName));
     }
@@ -153,11 +153,11 @@ class LockManagerTest {
     void removeXLockUnblocksSLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), "S");
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
             } catch(InterruptedException e) {}
 
             waiter.resume();
@@ -182,11 +182,11 @@ class LockManagerTest {
     void removeXLockUnblocksXLock() throws Throwable {
         final Waiter waiter = new Waiter();
 
-        lm.lock(lockName, txn, "X");
+        lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), "X");
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch(InterruptedException e) {}
 
             waiter.resume();
@@ -211,7 +211,7 @@ class LockManagerTest {
     void allLocksAreReleased() throws InterruptedException {
         Integer[] locks = {1, 2, 3, 4};
         for (int lockName: locks) {
-            lm.lock(lockName, txn, "S");
+            lm.lock(lockName, txn, Lock.LockMode.SHARED);
         }
         lm.removeTransaction(txn);
 
