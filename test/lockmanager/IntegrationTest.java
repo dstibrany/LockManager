@@ -14,6 +14,7 @@ class IntegrationTest {
     @BeforeEach
     void init() {
         lm = new LockManager();
+        WaitForGraph.reset();
     }
 
     @Test
@@ -144,6 +145,124 @@ class IntegrationTest {
         assertTrue(lm.hasLock(txn1, lockObj));
         waiter2.await(WAIT_DELAY);
         assertTrue(lm.hasLock(txn2, lockObj));
+    }
+
+    @Test
+    void blockedSLockAddsToWaitForGraph() throws Throwable {
+        Integer lockObj = 55;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
+        WaitForGraph graph = WaitForGraph.getInstance();
+        Waiter waiter1 = new Waiter();
+        Waiter waiter2 = new Waiter();
+        Thread t1 = new Thread(() -> {
+            try {
+                lm.lock(lockObj, txn1, Lock.LockMode.EXCLUSIVE);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            waiter1.resume();
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            lm.removeTransaction(txn1);
+
+        });
+        Thread t2 = new Thread(() -> {
+            try {
+                lm.lock(lockObj, txn2, Lock.LockMode.SHARED);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            waiter2.resume();
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            lm.removeTransaction(txn2);
+        });
+
+        t1.start();
+        Thread.sleep(SLEEP_DELAY);
+        t2.start();
+        waiter1.await(WAIT_DELAY);
+        assertTrue(graph.hasEdge(txn2, txn1));
+        assertFalse(graph.hasEdge(txn1, txn2));
+        waiter2.await(WAIT_DELAY);
+        assertFalse(graph.hasEdge(txn2, txn1));
+        assertFalse(graph.hasEdge(txn1, txn2));
+    }
+
+    @Test
+    void blockedXLockAddsToWaitForGraph() throws Throwable {
+        Integer lockObj = 55;
+        Transaction txn1 = new Transaction(1);
+        Transaction txn2 = new Transaction(2);
+        WaitForGraph graph = WaitForGraph.getInstance();
+        Waiter waiter1 = new Waiter();
+        Waiter waiter2 = new Waiter();
+        Thread t1 = new Thread(() -> {
+            try {
+                lm.lock(lockObj, txn1, Lock.LockMode.EXCLUSIVE);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            waiter1.resume();
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            lm.removeTransaction(txn1);
+
+        });
+        Thread t2 = new Thread(() -> {
+            try {
+                lm.lock(lockObj, txn2, Lock.LockMode.EXCLUSIVE);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            waiter2.resume();
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            lm.removeTransaction(txn2);
+        });
+
+        t1.start();
+        Thread.sleep(SLEEP_DELAY);
+        t2.start();
+        waiter1.await(WAIT_DELAY);
+        assertTrue(graph.hasEdge(txn2, txn1));
+        assertFalse(graph.hasEdge(txn1, txn2));
+        waiter2.await(WAIT_DELAY);
+        assertFalse(graph.hasEdge(txn2, txn1));
+        assertFalse(graph.hasEdge(txn1, txn2));
     }
 
     @Test

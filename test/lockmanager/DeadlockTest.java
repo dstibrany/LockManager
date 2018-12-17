@@ -26,8 +26,12 @@ class DeadlockTest {
         Transaction txn2 = new Transaction(2);
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
-        Thread t1 = new Thread(new DeadlockTransaction(lm, txn1, lockObj, "U", waiter1));
-        Thread t2 = new Thread(new DeadlockTransaction(lm, txn2, lockObj, "U", waiter2));
+        Thread t1 = new Thread(() -> {
+
+        });
+        Thread t2 = new Thread(() -> {
+
+        });
 
         t1.start();
         Thread.sleep(SLEEP_DELAY);
