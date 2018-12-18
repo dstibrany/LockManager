@@ -6,9 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Transaction, ArrayList<Lock>> txnTable = new ConcurrentHashMap<>();
+    private WaitForGraph waitForGraph = new WaitForGraph();
 
    void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws InterruptedException {
-       lockTable.putIfAbsent(lockName, new Lock());
+       lockTable.putIfAbsent(lockName, new Lock(waitForGraph));
        Lock lock = lockTable.get(lockName);
 
        if (requestedMode == Lock.LockMode.SHARED && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
@@ -56,6 +57,10 @@ class LockManager {
 
    Lock.LockMode getLockMode(Integer lockName) {
        return lockTable.get(lockName).getMode();
+   }
+
+   WaitForGraph getWaitForGraph() {
+       return waitForGraph;
    }
 }
 

@@ -14,7 +14,6 @@ class IntegrationTest {
     @BeforeEach
     void init() {
         lm = new LockManager();
-        WaitForGraph.reset();
     }
 
     @Test
@@ -152,7 +151,7 @@ class IntegrationTest {
         Integer lockObj = 55;
         Transaction txn1 = new Transaction(1);
         Transaction txn2 = new Transaction(2);
-        WaitForGraph graph = WaitForGraph.getInstance();
+        WaitForGraph graph = lm.getWaitForGraph();
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
         Thread t1 = new Thread(() -> {
@@ -211,7 +210,7 @@ class IntegrationTest {
         Integer lockObj = 55;
         Transaction txn1 = new Transaction(1);
         Transaction txn2 = new Transaction(2);
-        WaitForGraph graph = WaitForGraph.getInstance();
+        WaitForGraph graph = lm.getWaitForGraph();
         Waiter waiter1 = new Waiter();
         Waiter waiter2 = new Waiter();
         Thread t1 = new Thread(() -> {

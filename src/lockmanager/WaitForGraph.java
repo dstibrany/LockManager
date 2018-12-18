@@ -3,24 +3,13 @@ package lockmanager;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 class WaitForGraph {
     ConcurrentHashMap<Transaction, Set<Transaction>> adjacencyList = new ConcurrentHashMap<>();
-    private static WaitForGraph graph = null;
-
-    synchronized static WaitForGraph getInstance() {
-        if (graph == null) {
-            graph = new WaitForGraph();
-        }
-        return graph;
-    }
-
-    synchronized static void reset() {
-        graph = new WaitForGraph();
-    }
 
     void add(Transaction predecessor, Set<Transaction> successors) {
-        Set<Transaction> txnList = adjacencyList.getOrDefault(predecessor, new HashSet<>());
+        Set<Transaction> txnList = adjacencyList.getOrDefault(predecessor, new ConcurrentSkipListSet<>());
         txnList.addAll(successors);
         adjacencyList.put(predecessor, txnList);
     }
@@ -32,6 +21,7 @@ class WaitForGraph {
 
     boolean hasEdge(Transaction txn1, Transaction txn2) {
         Set<Transaction> txnList = adjacencyList.get(txn1);
+
         if (txnList == null) return false;
 
         return txnList.contains(txn2);

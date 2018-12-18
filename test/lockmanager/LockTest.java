@@ -6,23 +6,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LockTest {
     private Transaction txn1;
+    private WaitForGraph waitForGraph;
 
     @BeforeEach
     void init() {
         txn1 = new Transaction(1);
+        waitForGraph = new WaitForGraph();
     }
 
     @Test
     void acquire() throws InterruptedException {
-        Lock sLock = new Lock();
+        Lock sLock = new Lock(waitForGraph);
         sLock.acquire(txn1, Lock.LockMode.SHARED);
         assertEquals(Lock.LockMode.SHARED, sLock.getMode());
 
-        Lock xLock = new Lock();
+        Lock xLock = new Lock(waitForGraph);
         xLock.acquire(txn1, Lock.LockMode.EXCLUSIVE);
         assertEquals(Lock.LockMode.EXCLUSIVE, xLock.getMode());
 
-        Lock lockNoMode = new Lock();
+        Lock lockNoMode = new Lock(waitForGraph);
         assertThrows(RuntimeException.class, () -> {
             lockNoMode.acquire(txn1, null);
         });
@@ -30,7 +32,7 @@ class LockTest {
 
     @Test
     void release() throws InterruptedException {
-        Lock lock = new Lock();
+        Lock lock = new Lock(waitForGraph);
         lock.release(txn1);
         assertNull(lock.getMode());
 
@@ -45,16 +47,16 @@ class LockTest {
 
     @Test
     void upgrade() throws InterruptedException {
-        Lock lock = new Lock();
+        Lock lock = new Lock(waitForGraph);
         lock.upgrade(txn1);
         assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
 
-        Lock lock2 = new Lock();
+        Lock lock2 = new Lock(waitForGraph);
         lock2.acquire(txn1,Lock.LockMode.SHARED);
         lock2.upgrade(txn1);
         assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
 
-        Lock lock3 = new Lock();
+        Lock lock3 = new Lock(waitForGraph);
         lock3.acquire(txn1, Lock.LockMode.EXCLUSIVE);
         lock3.upgrade(txn1);
         assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
@@ -62,21 +64,21 @@ class LockTest {
 
     @Test
     void getMode() throws InterruptedException {
-        Lock sLock = new Lock();
+        Lock sLock = new Lock(waitForGraph);
         sLock.acquire(txn1,Lock.LockMode.SHARED);
         assertEquals(Lock.LockMode.SHARED, sLock.getMode());
 
-        Lock xLock = new Lock();
+        Lock xLock = new Lock(waitForGraph);
         xLock.acquire(txn1, Lock.LockMode.EXCLUSIVE);
         assertEquals(Lock.LockMode.EXCLUSIVE, xLock.getMode());
 
-        Lock newLock = new Lock();
+        Lock newLock = new Lock(waitForGraph);
         assertNull(newLock.getMode());
     }
 
     @Test
     void getOwnersSLock() throws InterruptedException {
-        Lock sLock = new Lock();
+        Lock sLock = new Lock(waitForGraph);
         sLock.acquire(txn1,Lock.LockMode.SHARED);
         assertEquals(1, sLock.getOwners().size());
         sLock.release(txn1);
@@ -85,7 +87,7 @@ class LockTest {
     
     @Test
     void getOwnersXLock() throws InterruptedException {
-        Lock xLock = new Lock();
+        Lock xLock = new Lock(waitForGraph);
         xLock.acquire(txn1,Lock.LockMode.EXCLUSIVE);
         assertEquals(1, xLock.getOwners().size());
         xLock.release(txn1);
@@ -99,7 +101,7 @@ class LockTest {
         Transaction t2 = new Transaction(2);
         Transaction t3 = new Transaction(3);
 
-        Lock sLock = new Lock();
+        Lock sLock = new Lock(waitForGraph);
 
         sLock.acquire(t1, Lock.LockMode.SHARED);
         sLock.acquire(t2, Lock.LockMode.SHARED);

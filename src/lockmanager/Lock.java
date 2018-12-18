@@ -16,7 +16,11 @@ class Lock {
     private final Set<Transaction> owners = new HashSet<>();
     private final ReentrantLock lock = new ReentrantLock(true);
     private final Condition waiters  = lock.newCondition();
-    private final WaitForGraph waitForGraph = WaitForGraph.getInstance();
+    private final WaitForGraph waitForGraph;
+
+    Lock(WaitForGraph waitForGraph) {
+        this.waitForGraph = waitForGraph;
+    }
 
     void acquire(Transaction txn, LockMode lockMode) throws InterruptedException {
         if (LockMode.SHARED == lockMode) {

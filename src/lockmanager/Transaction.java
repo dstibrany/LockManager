@@ -2,7 +2,7 @@ package lockmanager;
 
 import java.util.Objects;
 
-class Transaction {
+class Transaction implements Comparable {
     private int id;
 
     Transaction(int id) {
@@ -18,5 +18,11 @@ class Transaction {
 
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Transaction that = (Transaction) o;
+        return this.id - that.id;
     }
 }
