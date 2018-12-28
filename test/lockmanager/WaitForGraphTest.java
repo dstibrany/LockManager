@@ -126,9 +126,8 @@ class WaitForGraphTest {
         graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1), txnList.get(2))));
         graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
 
-        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
-        dfs.start();
-        assertTrue(dfs.getCycles().isEmpty());
+        List<List<Transaction>> cycles = graph.findCycles();
+        assertTrue(cycles.isEmpty());
     }
 
     @Test
@@ -141,11 +140,10 @@ class WaitForGraphTest {
         graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
         graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(0))));
 
-        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
-        dfs.start();
+        List<List<Transaction>> cycles = graph.findCycles();
 
-        assertEquals(1, dfs.getCycles().size());
-        List<Transaction> cycle = dfs.getCycles().get(0);
+        assertEquals(1, cycles.size());
+        List<Transaction> cycle = cycles.get(0);
         assertEquals(3, cycle.size());
         assertArrayEquals(txnList.stream().map(Transaction::getId).sorted().toArray(),
                 cycle.stream().map(Transaction::getId).sorted().toArray());
@@ -163,11 +161,10 @@ class WaitForGraphTest {
         graph.add(txnList.get(3), new HashSet<>(Arrays.asList(txnList.get(4))));
         graph.add(txnList.get(4), new HashSet<>(Arrays.asList(txnList.get(2))));
 
-        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
-        dfs.start();
+        List<List<Transaction>> cycles = graph.findCycles();
 
-        assertEquals(1, dfs.getCycles().size());
-        List<Transaction> cycle = dfs.getCycles().get(0);
+        assertEquals(1, cycles.size());
+        List<Transaction> cycle = cycles.get(0);
         assertEquals(3, cycle.size());
         assertArrayEquals(Stream.of(2, 3, 4).toArray(),
                 cycle.stream().map(Transaction::getId).sorted().toArray());
@@ -188,13 +185,12 @@ class WaitForGraphTest {
         graph.add(txnList.get(5), new HashSet<>(Arrays.asList(txnList.get(6))));
         graph.add(txnList.get(6), new HashSet<>(Arrays.asList(txnList.get(4))));
 
-        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
-        dfs.start();
+        List<List<Transaction>> cycles = graph.findCycles();
 
-        assertEquals(2, dfs.getCycles().size());
+        assertEquals(2, cycles.size());
 
-        List<Transaction> cycle1 = dfs.getCycles().get(0);
-        List<Transaction> cycle2 = dfs.getCycles().get(1);
+        List<Transaction> cycle1 = cycles.get(0);
+        List<Transaction> cycle2 = cycles.get(1);
 
         assertEquals(2, cycle1.size());
         assertArrayEquals(Stream.of(2, 3).toArray(),

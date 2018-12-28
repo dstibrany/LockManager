@@ -28,7 +28,7 @@ class WaitForGraph {
         return txnList.contains(txn2);
     }
 
-    List<List<Transaction>> findDeadlocks() {
+    List<List<Transaction>> findCycles() {
         DepthFirstSearch dfs = new DepthFirstSearch();
         dfs.start();
         return dfs.getCycles();
