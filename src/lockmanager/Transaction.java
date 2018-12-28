@@ -25,4 +25,8 @@ class Transaction implements Comparable {
         Transaction that = (Transaction) o;
         return this.id - that.id;
     }
+
+    int getId() {
+        return id;
+    }
 }

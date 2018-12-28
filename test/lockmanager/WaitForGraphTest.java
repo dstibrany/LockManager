@@ -3,21 +3,23 @@ package lockmanager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WaitForGraphTest {
     private WaitForGraph graph;
-    private Transaction txn1 = new Transaction(1);
-    private Transaction txn2 = new Transaction(2);
-    private Transaction txn3 = new Transaction(3);
+    private Transaction txn1;
+    private Transaction txn2;
+    private Transaction txn3;
 
     @BeforeEach
     void setUp() {
         graph = new WaitForGraph();
+        txn1 = new Transaction(1);
+        txn2 = new Transaction(2);
+        txn3 = new Transaction(3);
     }
 
     @Test
@@ -57,4 +59,148 @@ class WaitForGraphTest {
         assertTrue(graph.hasEdge(txn1, txn3));
     }
 
+    @Test
+    void dfsConnectedGraph() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 9; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2), txnList.get(3))));
+        graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(4), txnList.get(5))));
+        graph.add(txnList.get(5), new HashSet<>(Arrays.asList(txnList.get(6), txnList.get(7))));
+        graph.add(txnList.get(7), new HashSet<>(Arrays.asList(txnList.get(8), txnList.get(9))));
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+        Set<Transaction> discoveredTxns = dfs.getVisited();
+
+        assertArrayEquals(txnList.stream().map(Transaction::getId).sorted().toArray(),
+                discoveredTxns.stream().map(Transaction::getId).sorted().toArray());
+    }
+
+    @Test
+    void dfsNonConnectedGraph() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 9; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2), txnList.get(3))));
+        graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(4), txnList.get(5))));
+        graph.add(txnList.get(6), new HashSet<>(Arrays.asList(txnList.get(7))));
+        graph.add(txnList.get(7), new HashSet<>(Arrays.asList(txnList.get(8), txnList.get(9))));
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+        Set<Transaction> discoveredTxns = dfs.getVisited();
+
+        assertArrayEquals(txnList.stream().map(Transaction::getId).sorted().toArray(),
+                discoveredTxns.stream().map(Transaction::getId).sorted().toArray());
+    }
+
+    @Test
+    void dfsWithCycle() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 2; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
+        graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(0))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+        Set<Transaction> discoveredTxns = dfs.getVisited();
+
+        assertArrayEquals(txnList.stream().map(Transaction::getId).sorted().toArray(),
+                discoveredTxns.stream().map(Transaction::getId).sorted().toArray());
+    }
+
+    @Test
+    void noCycle() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 2; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1), txnList.get(2))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+        assertTrue(dfs.getCycles().isEmpty());
+    }
+
+    @Test
+    void simpleCycle() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 2; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
+        graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(0))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+
+        assertEquals(1, dfs.getCycles().size());
+        List<Transaction> cycle = dfs.getCycles().get(0);
+        assertEquals(3, cycle.size());
+        assertArrayEquals(txnList.stream().map(Transaction::getId).sorted().toArray(),
+                cycle.stream().map(Transaction::getId).sorted().toArray());
+    }
+
+    @Test
+    void complexCycle() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 4; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
+        graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(3))));
+        graph.add(txnList.get(3), new HashSet<>(Arrays.asList(txnList.get(4))));
+        graph.add(txnList.get(4), new HashSet<>(Arrays.asList(txnList.get(2))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+
+        assertEquals(1, dfs.getCycles().size());
+        List<Transaction> cycle = dfs.getCycles().get(0);
+        assertEquals(3, cycle.size());
+        assertArrayEquals(Stream.of(2, 3, 4).toArray(),
+                cycle.stream().map(Transaction::getId).sorted().toArray());
+    }
+
+    @Test
+    void multipleCycles() {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 6; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(2))));
+        graph.add(txnList.get(2), new HashSet<>(Arrays.asList(txnList.get(3))));
+        graph.add(txnList.get(3), new HashSet<>(Arrays.asList(txnList.get(2))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(4))));
+        graph.add(txnList.get(4), new HashSet<>(Arrays.asList(txnList.get(5))));
+        graph.add(txnList.get(5), new HashSet<>(Arrays.asList(txnList.get(6))));
+        graph.add(txnList.get(6), new HashSet<>(Arrays.asList(txnList.get(4))));
+
+        WaitForGraph.DepthFirstSearch dfs = graph.new DepthFirstSearch();
+        dfs.start();
+
+        assertEquals(2, dfs.getCycles().size());
+
+        List<Transaction> cycle1 = dfs.getCycles().get(0);
+        List<Transaction> cycle2 = dfs.getCycles().get(1);
+
+        assertEquals(2, cycle1.size());
+        assertArrayEquals(Stream.of(2, 3).toArray(),
+                cycle1.stream().map(Transaction::getId).sorted().toArray());
+        assertEquals(3, cycle2.size());
+        assertArrayEquals(Stream.of(4, 5, 6).toArray(),
+                cycle2.stream().map(Transaction::getId).sorted().toArray());
+    }
 }
