@@ -4,22 +4,38 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
 class WaitForGraph {
-    private ConcurrentMap<Transaction, Set<Transaction>> adjacencyList = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Transaction, Set<Transaction>> adjacencyList = new ConcurrentHashMap<>();
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private final Lock sharedLock = rwl.readLock();
+    private final Lock exclusiveLock = rwl.readLock();
+
 
     void add(Transaction predecessor, Set<Transaction> successors) {
-        Set<Transaction> txnList = adjacencyList.getOrDefault(predecessor, new ConcurrentSkipListSet<>());
-        txnList.addAll(successors);
-        adjacencyList.put(predecessor, txnList);
+        sharedLock.lock();
+        try {
+            Set<Transaction> txnList = adjacencyList.getOrDefault(predecessor, new ConcurrentSkipListSet<>());
+            txnList.addAll(successors);
+            adjacencyList.put(predecessor, txnList);
+        } finally {
+            sharedLock.unlock();
+        }
     }
 
     void remove(Transaction txn) {
-        adjacencyList.remove(txn);
-        removeSuccessor(txn);
+        sharedLock.lock();
+        try {
+            adjacencyList.remove(txn);
+            removeSuccessor(txn);
+        } finally {
+            sharedLock.unlock();
+        }
     }
 
     boolean hasEdge(Transaction txn1, Transaction txn2) {
@@ -28,10 +44,27 @@ class WaitForGraph {
         return txnList.contains(txn2);
     }
 
+    ScheduledFuture<?> startDetectionLoop(int initialDelay, int delay, TimeUnit timeUnit) {
+        ScheduledExecutorService es = newSingleThreadScheduledExecutor();
+        return es.scheduleWithFixedDelay(() -> {
+            List<List<Transaction>> cycles = findCycles();
+            for (List<Transaction> cycleGroup: cycles) {
+                for (Transaction t: cycleGroup) {
+                    t.abort();
+                }
+            }
+        }, initialDelay, delay, timeUnit);
+    }
+
     List<List<Transaction>> findCycles() {
-        DepthFirstSearch dfs = new DepthFirstSearch();
-        dfs.start();
-        return dfs.getCycles();
+        exclusiveLock.lock();
+        try {
+            DepthFirstSearch dfs = new DepthFirstSearch();
+            dfs.start();
+            return dfs.getCycles();
+        } finally {
+            exclusiveLock.unlock();
+        }
     }
 
     private void removeSuccessor(Transaction txnToRemove) {

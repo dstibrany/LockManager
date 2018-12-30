@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class IntegrationTest {
+class SystemTest {
     static int DEBUG = 0;
     private LockManager lm;
     private final int SLEEP_DELAY = 20;
@@ -157,37 +157,21 @@ class IntegrationTest {
         Thread t1 = new Thread(() -> {
             try {
                 lm.lock(lockObj, txn1, Lock.LockMode.EXCLUSIVE);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            try {
                 Thread.sleep(200);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-
-            waiter1.resume();
-
-            try {
+                waiter1.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
             lm.removeTransaction(txn1);
-
         });
         Thread t2 = new Thread(() -> {
             try {
                 lm.lock(lockObj, txn2, Lock.LockMode.SHARED);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            waiter2.resume();
-
-            try {
+                waiter2.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
@@ -216,20 +200,10 @@ class IntegrationTest {
         Thread t1 = new Thread(() -> {
             try {
                 lm.lock(lockObj, txn1, Lock.LockMode.EXCLUSIVE);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            try {
                 Thread.sleep(200);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-
-            waiter1.resume();
-
-            try {
+                waiter1.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
@@ -239,14 +213,9 @@ class IntegrationTest {
         Thread t2 = new Thread(() -> {
             try {
                 lm.lock(lockObj, txn2, Lock.LockMode.EXCLUSIVE);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            waiter2.resume();
-
-            try {
+                waiter2.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
@@ -311,7 +280,7 @@ class TransactionTest implements Runnable {
     }
 
     private void debug(String msg) {
-        if (IntegrationTest.DEBUG == 1)
+        if (SystemTest.DEBUG == 1)
             System.out.println(msg);
     }
 
@@ -326,15 +295,10 @@ class TransactionTest implements Runnable {
     private void lock(Lock.LockMode mode) {
         try {
             lm.lock(obj, txn, mode);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        debug("Txn: " + txn + " has the lock");
-        waiter.resume();
-
-        try {
+            debug("Txn: " + txn + " has the lock");
+            waiter.resume();
             Thread.sleep(100);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
@@ -345,31 +309,13 @@ class TransactionTest implements Runnable {
     private void upgrade() {
         try {
             lm.lock(obj, txn, Lock.LockMode.SHARED);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        debug("Txn: " + txn + " has the Slock");
-
-        try {
+            debug("Txn: " + txn + " has the Slock");
             Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-
-        try {
             lm.lock(obj, txn, Lock.LockMode.EXCLUSIVE);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        debug("Txn: " + txn + " has the Xlock");
-
-        waiter.resume();
-
-        try {
+            debug("Txn: " + txn + " has the Xlock");
+            waiter.resume();
             Thread.sleep(100);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 

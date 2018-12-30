@@ -2,11 +2,16 @@ package lockmanager;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Transaction, ArrayList<Lock>> txnTable = new ConcurrentHashMap<>();
     private WaitForGraph waitForGraph = new WaitForGraph();
+
+    LockManager() {
+        waitForGraph.startDetectionLoop(5, 5, TimeUnit.SECONDS);
+    }
 
    void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws InterruptedException {
        lockTable.putIfAbsent(lockName, new Lock(waitForGraph));

@@ -1,7 +1,0 @@
-package lockmanager;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-class DeadLockDetectorTest {
-
-}

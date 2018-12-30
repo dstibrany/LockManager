@@ -4,11 +4,13 @@ import java.util.Objects;
 
 class Transaction implements Comparable {
     private int id;
+    private boolean aborted = false;
 
     Transaction(int id) {
         this.id = id;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -16,6 +18,7 @@ class Transaction implements Comparable {
         return id == that.id;
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(id);
     }
@@ -28,5 +31,13 @@ class Transaction implements Comparable {
 
     int getId() {
         return id;
+    }
+
+    void abort() {
+        aborted = true;
+    }
+
+    boolean isAborted() {
+        return aborted;
     }
 }

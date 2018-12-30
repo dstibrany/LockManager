@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -198,5 +201,24 @@ class WaitForGraphTest {
         assertEquals(3, cycle2.size());
         assertArrayEquals(Stream.of(4, 5, 6).toArray(),
                 cycle2.stream().map(Transaction::getId).sorted().toArray());
+    }
+
+    @Test
+    void detectionLoopAbortsTxns() throws Throwable {
+        ArrayList<Transaction> txnList = new ArrayList<>();
+        for (int i = 0; i <= 1; i++) {
+            txnList.add(new Transaction(i));
+        }
+        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(0))));
+
+        assertFalse(txnList.get(0).isAborted());
+        assertFalse(txnList.get(1).isAborted());
+
+        graph.startDetectionLoop(0, 5000, TimeUnit.MILLISECONDS);
+        Thread.sleep(100);
+        
+        assertTrue(txnList.get(0).isAborted());
+        assertTrue(txnList.get(1).isAborted());
     }
 }
