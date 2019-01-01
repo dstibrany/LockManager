@@ -203,7 +203,7 @@ class WaitForGraphTest {
                 cycle2.stream().map(Transaction::getId).sorted().toArray());
     }
 
-    // TODO: adjust this test now that DL detection works
+    // TODO: fix this test now that DL detection works
     @Test
     void detectionLoopAbortsTransactions() throws Throwable {
         ArrayList<Transaction> txnList = new ArrayList<>();

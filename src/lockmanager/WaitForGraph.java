@@ -1,9 +1,6 @@
 package lockmanager;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
@@ -47,13 +44,14 @@ class WaitForGraph {
     void startDetectionLoop(int initialDelay, int delay) {
         ScheduledExecutorService es = newSingleThreadScheduledExecutor();
         es.scheduleWithFixedDelay(() -> {
-            // TODO: figure out DL resolution strategy
             List<List<Transaction>> cycles = findCycles();
+
+            // DL resolution strategy is to abort the newest transaction, based on ID.
             for (List<Transaction> cycleGroup: cycles) {
-                for (Transaction t: cycleGroup) {
-                    t.abort();
-                }
+                Optional<Transaction> newestTxn = cycleGroup.stream().max(Transaction::compareTo);
+                newestTxn.ifPresent(Transaction::abort);
             }
+
         }, initialDelay, delay, TimeUnit.MILLISECONDS);
     }
 

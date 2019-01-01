@@ -17,9 +17,7 @@ class Transaction implements Comparable {
 
     void abort() {
         aborted = true;
-        System.out.printf("Thread: %d Txn: %d aborting\n", Thread.currentThread().getId(), getId());
         txnThread.interrupt();
-
     }
 
     boolean isAborted() {

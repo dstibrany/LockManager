@@ -33,7 +33,6 @@ class Lock {
     }
 
     void release(Transaction txn) {
-        System.out.printf("Thread: %d Releasing lock on txn %d\n", Thread.currentThread().getId(), txn.getId());
         lock.lock();
         try {
             if (sLockCount > 0) {
