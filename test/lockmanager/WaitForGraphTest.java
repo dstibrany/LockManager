@@ -203,8 +203,9 @@ class WaitForGraphTest {
                 cycle2.stream().map(Transaction::getId).sorted().toArray());
     }
 
+    // TODO: adjust this test now that DL detection works
     @Test
-    void detectionLoopAbortsTxns() throws Throwable {
+    void detectionLoopAbortsTransactions() throws Throwable {
         ArrayList<Transaction> txnList = new ArrayList<>();
         for (int i = 0; i <= 1; i++) {
             txnList.add(new Transaction(i));
@@ -215,9 +216,9 @@ class WaitForGraphTest {
         assertFalse(txnList.get(0).isAborted());
         assertFalse(txnList.get(1).isAborted());
 
-        graph.startDetectionLoop(0, 5000, TimeUnit.MILLISECONDS);
+        graph.startDetectionLoop(0, 5000);
         Thread.sleep(100);
-        
+
         assertTrue(txnList.get(0).isAborted());
         assertTrue(txnList.get(1).isAborted());
     }

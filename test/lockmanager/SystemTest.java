@@ -160,8 +160,8 @@ class SystemTest {
                 Thread.sleep(200);
                 waiter1.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+
             }
 
             lm.removeTransaction(txn1);
@@ -171,8 +171,8 @@ class SystemTest {
                 lm.lock(lockObj, txn2, Lock.LockMode.SHARED);
                 waiter2.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+
             }
 
             lm.removeTransaction(txn2);
@@ -203,8 +203,8 @@ class SystemTest {
                 Thread.sleep(200);
                 waiter1.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+
             }
 
             lm.removeTransaction(txn1);
@@ -215,8 +215,7 @@ class SystemTest {
                 lm.lock(lockObj, txn2, Lock.LockMode.EXCLUSIVE);
                 waiter2.resume();
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (Exception e) {
             }
 
             lm.removeTransaction(txn2);
@@ -298,8 +297,8 @@ class TransactionTest implements Runnable {
             debug("Txn: " + txn + " has the lock");
             waiter.resume();
             Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+
         }
 
         debug("Txn: " + txn + " released the lock");
@@ -315,8 +314,8 @@ class TransactionTest implements Runnable {
             debug("Txn: " + txn + " has the Xlock");
             waiter.resume();
             Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+
         }
 
         debug("Txn: " + txn + " released the lock");

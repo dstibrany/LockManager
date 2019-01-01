@@ -44,16 +44,17 @@ class WaitForGraph {
         return txnList.contains(txn2);
     }
 
-    ScheduledFuture<?> startDetectionLoop(int initialDelay, int delay, TimeUnit timeUnit) {
+    void startDetectionLoop(int initialDelay, int delay) {
         ScheduledExecutorService es = newSingleThreadScheduledExecutor();
-        return es.scheduleWithFixedDelay(() -> {
+        es.scheduleWithFixedDelay(() -> {
+            // TODO: figure out DL resolution strategy
             List<List<Transaction>> cycles = findCycles();
             for (List<Transaction> cycleGroup: cycles) {
                 for (Transaction t: cycleGroup) {
                     t.abort();
                 }
             }
-        }, initialDelay, delay, timeUnit);
+        }, initialDelay, delay, TimeUnit.MILLISECONDS);
     }
 
     List<List<Transaction>> findCycles() {

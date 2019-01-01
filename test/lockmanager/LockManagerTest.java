@@ -21,14 +21,14 @@ class LockManagerTest {
     }
 
     @Test
-    void getSLock() throws InterruptedException {
+    void getSLock() throws DeadlockException {
         lm.lock(lockName, txn, Lock.LockMode.SHARED);
         assertTrue(lm.hasLock(txn, lockName));
         assertEquals(Lock.LockMode.SHARED, lm.getLockMode(lockName));
     }
 
     @Test
-    void getXLock() throws InterruptedException {
+    void getXLock() throws DeadlockException {
         lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
         assertTrue(lm.hasLock(txn, lockName));
         assertEquals(Lock.LockMode.EXCLUSIVE, lm.getLockMode(lockName));
@@ -42,7 +42,7 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch (InterruptedException e) {}
+            } catch (DeadlockException e) {}
 
             waiter.resume(); // should not get here
         }).start();
@@ -60,7 +60,7 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch (InterruptedException e) {
+            } catch (DeadlockException e) {
                 e.printStackTrace();
             }
             waiter.resume(); // should not get here
@@ -80,7 +80,7 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch (InterruptedException e) {
+            } catch (DeadlockException e) {
                 e.printStackTrace();
             }
             waiter.resume();
@@ -103,7 +103,7 @@ class LockManagerTest {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch (InterruptedException e) {
+            } catch (DeadlockException e) {
                 e.printStackTrace();
             }
             waiter.resume(); // should not get here
@@ -124,7 +124,7 @@ class LockManagerTest {
             try {
                 lm.lock(lockName,  new Transaction(2), Lock.LockMode.SHARED);
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch (InterruptedException e) {
+            } catch (DeadlockException e) {
                 e.printStackTrace();
             }
             waiter.resume(); // should not get here
@@ -158,7 +158,7 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch(InterruptedException e) {}
+            } catch (DeadlockException e) {}
 
             waiter.resume();
         }).start();
@@ -187,7 +187,7 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch(InterruptedException e) {}
+            } catch (DeadlockException e) {}
 
             waiter.resume();
         }).start();
@@ -208,7 +208,7 @@ class LockManagerTest {
     }
 
     @Test
-    void allLocksAreReleased() throws InterruptedException {
+    void allLocksAreReleased() throws DeadlockException {
         Integer[] locks = {1, 2, 3, 4};
         for (int lockName: locks) {
             lm.lock(lockName, txn, Lock.LockMode.SHARED);

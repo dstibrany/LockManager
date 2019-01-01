@@ -5,9 +5,25 @@ import java.util.Objects;
 class Transaction implements Comparable {
     private int id;
     private boolean aborted = false;
+    private Thread txnThread = Thread.currentThread();
 
     Transaction(int id) {
         this.id = id;
+    }
+
+    int getId() {
+        return id;
+    }
+
+    void abort() {
+        aborted = true;
+        System.out.printf("Thread: %d Txn: %d aborting\n", Thread.currentThread().getId(), getId());
+        txnThread.interrupt();
+
+    }
+
+    boolean isAborted() {
+        return aborted;
     }
 
     @Override
@@ -27,17 +43,5 @@ class Transaction implements Comparable {
     public int compareTo(Object o) {
         Transaction that = (Transaction) o;
         return this.id - that.id;
-    }
-
-    int getId() {
-        return id;
-    }
-
-    void abort() {
-        aborted = true;
-    }
-
-    boolean isAborted() {
-        return aborted;
     }
 }
