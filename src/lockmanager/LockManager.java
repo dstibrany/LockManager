@@ -9,8 +9,11 @@ class LockManager {
     private WaitForGraph waitForGraph = new WaitForGraph();
 
     LockManager() {
-        // TODO: figure out how to pass in DL params
-        waitForGraph.startDetectionLoop(1000, 5000);
+        this(1000, 5000);
+    }
+
+    LockManager(int deadlockDetectorInitialDelay, int deadlockDetectorDelay) {
+        waitForGraph.startDetectionLoop(deadlockDetectorInitialDelay, deadlockDetectorDelay);
     }
 
     void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws DeadlockException {

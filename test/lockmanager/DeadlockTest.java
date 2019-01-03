@@ -10,9 +10,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class DeadlockTest {
 
+    private final int DEADLOCK_DETECTOR_INITIAL_DELAY = 300;
+    private final int DEADLOCK_DETECTOR_DELAY = 5000;
+
     @Test
     void twoWayDeadLock() {
-        LockManager lm = new LockManager();
+        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
         int lockA = 99;
         int lockB = 100;
         Waiter waiter1 = new Waiter();
@@ -59,7 +62,7 @@ class DeadlockTest {
 
     @Test
     void threeWayDeadlock() {
-        LockManager lm = new LockManager();
+        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
         int lockA = 99;
         int lockB = 100;
         int lockC = 101;
@@ -124,7 +127,7 @@ class DeadlockTest {
 
     @Test
     void nonDeadlockedTransactionGetsUnblocked() throws Exception {
-        LockManager lm = new LockManager();
+        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
         int lockA = 99;
         int lockB = 100;
         Waiter waiter1 = new Waiter();
@@ -186,7 +189,7 @@ class DeadlockTest {
 
     @Test
     void notAbortedIfNotDeadlocked() {
-        LockManager lm = new LockManager();
+        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
         int lockA = 99;
         int lockB = 100;
         Waiter waiter1 = new Waiter();
@@ -215,14 +218,14 @@ class DeadlockTest {
         t2.start();
 
         assertThrows(TimeoutException.class, () -> {
-            waiter1.await(1200);
-            waiter2.await(1200);
+            waiter1.await(600);
+            waiter2.await(600);
         }, "Deadlock detector should not have aborted either transaction");
     }
 
     @Test
     void multipleDeadlocks() {
-        LockManager lm = new LockManager();
+        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
         int lockA = 99;
         int lockB = 100;
         int lockC = 101;
