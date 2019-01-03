@@ -203,6 +203,7 @@ class WaitForGraphTest {
     @Test
     void detectionLoopAbortsTransactions() {
         assertThrows(InterruptedException.class, () -> {
+            WaitForGraph graph = new WaitForGraph(200, 5000);
             ArrayList<Transaction> txnList = new ArrayList<>();
             for (int i = 0; i <= 1; i++) {
                 txnList.add(new Transaction(i));
@@ -210,9 +211,7 @@ class WaitForGraphTest {
             graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
             graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(0))));
 
-            graph.startDetectionLoop(0, 5000);
-
-            Thread.sleep(500);
+            Thread.sleep(1000);
         }, "Deadlock detector did abort any transactions");
     }
 }

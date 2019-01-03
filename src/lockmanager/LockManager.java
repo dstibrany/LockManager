@@ -6,14 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Transaction, ArrayList<Lock>> txnTable = new ConcurrentHashMap<>();
-    private WaitForGraph waitForGraph = new WaitForGraph();
+    private WaitForGraph waitForGraph;
 
     LockManager() {
-        this(1000, 5000);
+        waitForGraph = new WaitForGraph();
     }
 
     LockManager(int deadlockDetectorInitialDelay, int deadlockDetectorDelay) {
-        waitForGraph.startDetectionLoop(deadlockDetectorInitialDelay, deadlockDetectorDelay);
+        waitForGraph = new WaitForGraph(deadlockDetectorInitialDelay, deadlockDetectorDelay);
     }
 
     void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws DeadlockException {
