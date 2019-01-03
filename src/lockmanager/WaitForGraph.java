@@ -70,7 +70,9 @@ class WaitForGraph {
     private void removeSuccessor(Transaction txnToRemove) {
         for (Transaction predecessor: adjacencyList.keySet()) {
             Set<Transaction> successors = adjacencyList.get(predecessor);
-            successors.remove(txnToRemove);
+            if (successors != null) {
+                successors.remove(txnToRemove);
+            }
         }
     }
 
