@@ -60,9 +60,7 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch (DeadlockException e) {
-                e.printStackTrace();
-            }
+            } catch (DeadlockException e) {}
             waiter.resume(); // should not get here
         }).start();
 
@@ -80,9 +78,8 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch (DeadlockException e) {
-                e.printStackTrace();
-            }
+            } catch (DeadlockException e) {}
+
             waiter.resume();
         }).start();
 
@@ -104,7 +101,6 @@ class LockManagerTest {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
-                e.printStackTrace();
             }
             waiter.resume(); // should not get here
         }).start();
@@ -125,7 +121,6 @@ class LockManagerTest {
                 lm.lock(lockName,  new Transaction(2), Lock.LockMode.SHARED);
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
-                e.printStackTrace();
             }
             waiter.resume(); // should not get here
         }).start();

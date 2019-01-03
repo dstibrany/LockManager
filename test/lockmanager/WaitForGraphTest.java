@@ -203,23 +203,19 @@ class WaitForGraphTest {
                 cycle2.stream().map(Transaction::getId).sorted().toArray());
     }
 
-    // TODO: fix this test now that DL detection works
     @Test
-    void detectionLoopAbortsTransactions() throws Throwable {
-        ArrayList<Transaction> txnList = new ArrayList<>();
-        for (int i = 0; i <= 1; i++) {
-            txnList.add(new Transaction(i));
-        }
-        graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
-        graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(0))));
+    void detectionLoopAbortsTransactions() {
+        assertThrows(InterruptedException.class, () -> {
+            ArrayList<Transaction> txnList = new ArrayList<>();
+            for (int i = 0; i <= 1; i++) {
+                txnList.add(new Transaction(i));
+            }
+            graph.add(txnList.get(0), new HashSet<>(Arrays.asList(txnList.get(1))));
+            graph.add(txnList.get(1), new HashSet<>(Arrays.asList(txnList.get(0))));
 
-        assertFalse(txnList.get(0).isAborted());
-        assertFalse(txnList.get(1).isAborted());
+            graph.startDetectionLoop(0, 5000);
 
-        graph.startDetectionLoop(0, 5000);
-        Thread.sleep(100);
-
-        assertTrue(txnList.get(0).isAborted());
-        assertTrue(txnList.get(1).isAborted());
+            Thread.sleep(500);
+        }, "Deadlock detector did abort any transactions");
     }
 }

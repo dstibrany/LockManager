@@ -2,7 +2,6 @@ package lockmanager;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();

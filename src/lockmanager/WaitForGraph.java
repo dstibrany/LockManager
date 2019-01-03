@@ -1,5 +1,6 @@
 package lockmanager;
 
+
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -46,7 +47,7 @@ class WaitForGraph {
         es.scheduleWithFixedDelay(() -> {
             List<List<Transaction>> cycles = findCycles();
 
-            // DL resolution strategy is to abort the newest transaction, based on ID.
+            // XXX: DL resolution strategy is to abort the newest transaction, based on ID.
             for (List<Transaction> cycleGroup: cycles) {
                 Optional<Transaction> newestTxn = cycleGroup.stream().max(Transaction::compareTo);
                 newestTxn.ifPresent(Transaction::abort);
