@@ -42,7 +42,8 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch (DeadlockException e) {}
+            } catch (DeadlockException e) {
+            }
 
             waiter.resume(); // should not get here
         }).start();
@@ -60,7 +61,8 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch (DeadlockException e) {}
+            } catch (DeadlockException e) {
+            }
             waiter.resume(); // should not get here
         }).start();
 
@@ -78,7 +80,8 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch (DeadlockException e) {}
+            } catch (DeadlockException e) {
+            }
 
             waiter.resume();
         }).start();
@@ -118,7 +121,7 @@ class LockManagerTest {
 
         new Thread(() -> {
             try {
-                lm.lock(lockName,  new Transaction(2), Lock.LockMode.SHARED);
+                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
             }
@@ -153,7 +156,8 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-            } catch (DeadlockException e) {}
+            } catch (DeadlockException e) {
+            }
 
             waiter.resume();
         }).start();
@@ -182,7 +186,8 @@ class LockManagerTest {
         new Thread(() -> {
             try {
                 lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
-            } catch (DeadlockException e) {}
+            } catch (DeadlockException e) {
+            }
 
             waiter.resume();
         }).start();
@@ -205,12 +210,12 @@ class LockManagerTest {
     @Test
     void allLocksAreReleased() throws DeadlockException {
         Integer[] locks = {1, 2, 3, 4};
-        for (int lockName: locks) {
+        for (int lockName : locks) {
             lm.lock(lockName, txn, Lock.LockMode.SHARED);
         }
         lm.removeTransaction(txn);
 
-        for (int lockName: locks) {
+        for (int lockName : locks) {
             assertFalse(lm.hasLock(txn, lockName));
         }
     }

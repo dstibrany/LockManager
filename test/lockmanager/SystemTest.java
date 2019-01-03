@@ -3,13 +3,15 @@ package lockmanager;
 import net.jodah.concurrentunit.Waiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SystemTest {
     static int DEBUG = 0;
-    private LockManager lm;
     private final int SLEEP_DELAY = 20;
     private final int WAIT_DELAY = 1000;
+    private LockManager lm;
 
     @BeforeEach
     void init() {

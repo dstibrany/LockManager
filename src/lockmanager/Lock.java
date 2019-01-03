@@ -6,17 +6,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 class Lock {
-    enum LockMode {
-        SHARED,
-        EXCLUSIVE
-    }
-
-    private int xLockCount = 0;
-    private int sLockCount = 0;
     private final Set<Transaction> owners = new HashSet<>();
     private final ReentrantLock lock = new ReentrantLock(true);
-    private final Condition waiters  = lock.newCondition();
+    private final Condition waiters = lock.newCondition();
     private final WaitForGraph waitForGraph;
+    private int xLockCount = 0;
+    private int sLockCount = 0;
 
     Lock(WaitForGraph waitForGraph) {
         this.waitForGraph = waitForGraph;
@@ -108,7 +103,7 @@ class Lock {
             xLockCount = 1;
             owners.add(txn);
         } finally {
-           lock.unlock();
+            lock.unlock();
         }
     }
 
@@ -118,6 +113,11 @@ class Lock {
 
     private boolean isSLocked() {
         return sLockCount > 0;
+    }
+
+    enum LockMode {
+        SHARED,
+        EXCLUSIVE
     }
 
 }

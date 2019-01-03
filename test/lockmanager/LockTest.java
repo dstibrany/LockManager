@@ -2,6 +2,7 @@ package lockmanager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LockTest {
@@ -36,11 +37,11 @@ class LockTest {
         lock.release(txn1);
         assertNull(lock.getMode());
 
-        lock.acquire(txn1,Lock.LockMode.SHARED);
+        lock.acquire(txn1, Lock.LockMode.SHARED);
         lock.release(txn1);
         assertNull(lock.getMode());
 
-        lock.acquire(txn1,Lock.LockMode.EXCLUSIVE);
+        lock.acquire(txn1, Lock.LockMode.EXCLUSIVE);
         lock.release(txn1);
         assertNull(lock.getMode());
     }
@@ -52,7 +53,7 @@ class LockTest {
         assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
 
         Lock lock2 = new Lock(waitForGraph);
-        lock2.acquire(txn1,Lock.LockMode.SHARED);
+        lock2.acquire(txn1, Lock.LockMode.SHARED);
         lock2.upgrade(txn1);
         assertEquals(Lock.LockMode.EXCLUSIVE, lock.getMode());
 
@@ -65,7 +66,7 @@ class LockTest {
     @Test
     void getMode() throws InterruptedException {
         Lock sLock = new Lock(waitForGraph);
-        sLock.acquire(txn1,Lock.LockMode.SHARED);
+        sLock.acquire(txn1, Lock.LockMode.SHARED);
         assertEquals(Lock.LockMode.SHARED, sLock.getMode());
 
         Lock xLock = new Lock(waitForGraph);
@@ -79,16 +80,16 @@ class LockTest {
     @Test
     void getOwnersSLock() throws InterruptedException {
         Lock sLock = new Lock(waitForGraph);
-        sLock.acquire(txn1,Lock.LockMode.SHARED);
+        sLock.acquire(txn1, Lock.LockMode.SHARED);
         assertEquals(1, sLock.getOwners().size());
         sLock.release(txn1);
         assertEquals(0, sLock.getOwners().size());
     }
-    
+
     @Test
     void getOwnersXLock() throws InterruptedException {
         Lock xLock = new Lock(waitForGraph);
-        xLock.acquire(txn1,Lock.LockMode.EXCLUSIVE);
+        xLock.acquire(txn1, Lock.LockMode.EXCLUSIVE);
         assertEquals(1, xLock.getOwners().size());
         xLock.release(txn1);
         assertEquals(0, xLock.getOwners().size());

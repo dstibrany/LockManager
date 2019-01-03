@@ -48,7 +48,7 @@ class WaitForGraph {
             List<List<Transaction>> cycles = findCycles();
 
             // XXX: DL resolution strategy is to abort the newest transaction, based on ID.
-            for (List<Transaction> cycleGroup: cycles) {
+            for (List<Transaction> cycleGroup : cycles) {
                 Optional<Transaction> newestTxn = cycleGroup.stream().max(Transaction::compareTo);
                 newestTxn.ifPresent(Transaction::abort);
             }
@@ -68,7 +68,7 @@ class WaitForGraph {
     }
 
     private void removeSuccessor(Transaction txnToRemove) {
-        for (Transaction predecessor: adjacencyList.keySet()) {
+        for (Transaction predecessor : adjacencyList.keySet()) {
             Set<Transaction> successors = adjacencyList.get(predecessor);
             if (successors != null) {
                 successors.remove(txnToRemove);
@@ -81,7 +81,7 @@ class WaitForGraph {
         private List<List<Transaction>> cycles = new ArrayList<>();
 
         void start() {
-            for (Transaction txn: adjacencyList.keySet()) {
+            for (Transaction txn : adjacencyList.keySet()) {
                 if (!visited.contains(txn)) {
                     visit(txn, new ArrayList<>());
                 }
@@ -101,7 +101,7 @@ class WaitForGraph {
             path.add(node);
 
             if (adjacencyList.containsKey(node)) {
-                for (Transaction neighbour: adjacencyList.get(node)) {
+                for (Transaction neighbour : adjacencyList.get(node)) {
                     if (!visited.contains(neighbour)) {
                         visit(neighbour, new ArrayList<>(path));
                     } else {

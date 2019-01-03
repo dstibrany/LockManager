@@ -28,7 +28,8 @@ class DeadlockTest {
                 waiter1.resume();
             } catch (DeadlockException e) {
                 waiter1.fail("Txn1 should not have been aborted by deadlock detector");
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         Thread t2 = new Thread(() -> {
@@ -41,7 +42,8 @@ class DeadlockTest {
                 waiter2.fail("Txn2 should have been aborted by the deadlock detector");
             } catch (DeadlockException e) {
                 waiter2.resume();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         t1.start();
@@ -75,7 +77,8 @@ class DeadlockTest {
                 waiter1.resume();
             } catch (DeadlockException e) {
                 waiter1.fail("Txn1 should not have been aborted by deadlock detector");
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         Thread t2 = new Thread(() -> {
@@ -88,7 +91,8 @@ class DeadlockTest {
                 waiter2.resume();
             } catch (DeadlockException e) {
                 waiter2.fail("Txn2 should not have been aborted by the deadlock detector");
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         Thread t3 = new Thread(() -> {
@@ -101,7 +105,8 @@ class DeadlockTest {
                 waiter3.fail("Txn3 should have been aborted by the deadlock detector");
             } catch (DeadlockException e) {
                 waiter3.resume();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         t1.start();
@@ -116,6 +121,7 @@ class DeadlockTest {
             fail("Deadlock was not resolved");
         }
     }
+
     @Test
     void nonDeadlockedTransactionGetsUnblocked() throws Exception {
         LockManager lm = new LockManager();
@@ -135,7 +141,8 @@ class DeadlockTest {
                 waiter1.resume();
             } catch (DeadlockException e) {
                 waiter1.fail("Txn1 should not have been aborted by deadlock detector");
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         Thread t2 = new Thread(() -> {
@@ -148,7 +155,8 @@ class DeadlockTest {
                 waiter2.fail("Txn2 should have been aborted by the deadlock detector");
             } catch (DeadlockException e) {
                 waiter2.resume();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         Thread t3 = new Thread(() -> {
@@ -234,7 +242,8 @@ class DeadlockTest {
                 waiter1.resume();
             } catch (DeadlockException e) {
                 waiter1.fail("Txn1 should not have been aborted by DL detector");
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         });
         Thread t2 = new Thread(() -> {
             Transaction txn2 = new Transaction(2);
@@ -275,7 +284,8 @@ class DeadlockTest {
                 waiter4.fail("Txn4 should have been aborted by DL detector");
             } catch (DeadlockException e) {
                 waiter4.resume();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         });
 
         t1.start();
