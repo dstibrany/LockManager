@@ -3,8 +3,8 @@ package lockmanager;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
