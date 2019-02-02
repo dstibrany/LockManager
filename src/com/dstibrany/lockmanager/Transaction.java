@@ -1,10 +1,9 @@
-package lockmanager;
+package com.dstibrany.lockmanager;
 
 import java.util.Objects;
 
 class Transaction implements Comparable {
     private int id;
-    private boolean aborted = false;
     private Thread txnThread = Thread.currentThread();
 
     Transaction(int id) {
@@ -16,12 +15,7 @@ class Transaction implements Comparable {
     }
 
     void abort() {
-        aborted = true;
         txnThread.interrupt();
-    }
-
-    boolean isAborted() {
-        return aborted;
     }
 
     @Override

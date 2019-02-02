@@ -1,4 +1,4 @@
-package lockmanager;
+package com.dstibrany.lockmanager;
 
 import net.jodah.concurrentunit.Waiter;
 import org.junit.jupiter.api.Test;

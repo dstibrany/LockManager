@@ -1,4 +1,4 @@
-package lockmanager;
+package com.dstibrany.lockmanager;
 
 
 import java.util.*;

@@ -1,22 +1,22 @@
-package lockmanager;
+package com.dstibrany.lockmanager;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-class LockManager {
+public class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Transaction, ArrayList<Lock>> txnTable = new ConcurrentHashMap<>();
     private WaitForGraph waitForGraph;
 
-    LockManager() {
+    public LockManager() {
         waitForGraph = new WaitForGraph();
     }
 
-    LockManager(int deadlockDetectorInitialDelay, int deadlockDetectorDelay) {
+    public LockManager(int deadlockDetectorInitialDelay, int deadlockDetectorDelay) {
         waitForGraph = new WaitForGraph(deadlockDetectorInitialDelay, deadlockDetectorDelay);
     }
 
-    void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws DeadlockException {
+    public void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws DeadlockException {
         lockTable.putIfAbsent(lockName, new Lock(waitForGraph));
         Lock lock = lockTable.get(lockName);
 
@@ -41,7 +41,7 @@ class LockManager {
         txnTable.put(txn, txnLockList);
     }
 
-    void removeTransaction(Transaction txn) {
+    public void removeTransaction(Transaction txn) {
         ArrayList<Lock> txnLockList = txnTable.get(txn);
 
         for (Lock lock : txnLockList) {
