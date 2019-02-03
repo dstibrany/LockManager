@@ -1,10 +1,13 @@
 package com.dstibrany.lockmanager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 class Transaction implements Comparable {
     private int id;
     private Thread txnThread = Thread.currentThread();
+    private List<Lock> lockList = new ArrayList<>();
 
     Transaction(int id) {
         this.id = id;
@@ -12,6 +15,14 @@ class Transaction implements Comparable {
 
     int getId() {
         return id;
+    }
+
+    List<Lock> getLocks() {
+        return lockList;
+    }
+
+    void addLock(Lock lock) {
+        lockList.add(lock);
     }
 
     void abort() {

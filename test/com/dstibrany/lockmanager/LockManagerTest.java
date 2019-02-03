@@ -9,13 +9,13 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LockManagerTest {
-    private Transaction txn;
-    private Integer lockName;
+    private int txn;
+    private int lockName;
     private LockManager lm;
 
     @BeforeEach
     void init() {
-        txn = new Transaction(1);
+        txn = 1;
         lockName = 123;
         lm = new LockManager();
     }
@@ -41,7 +41,7 @@ class LockManagerTest {
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
+                lm.lock(lockName, 2, Lock.LockMode.SHARED);
             } catch (DeadlockException e) {
             }
 
@@ -60,7 +60,7 @@ class LockManagerTest {
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
+                lm.lock(lockName, 2, Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
             }
             waiter.resume(); // should not get here
@@ -79,7 +79,7 @@ class LockManagerTest {
 
         new Thread(() -> {
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
+                lm.lock(lockName, 2, Lock.LockMode.SHARED);
             } catch (DeadlockException e) {
             }
 
@@ -100,9 +100,10 @@ class LockManagerTest {
         lm.lock(lockName, txn, Lock.LockMode.SHARED);
 
         new Thread(() -> {
+            int txnId = 2;
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
+                lm.lock(lockName, txnId, Lock.LockMode.SHARED);
+                lm.lock(lockName, txnId, Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
             }
             waiter.resume(); // should not get here
@@ -120,9 +121,10 @@ class LockManagerTest {
         lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
+            int txnId = 2;
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
+                lm.lock(lockName, txnId, Lock.LockMode.SHARED);
+                lm.lock(lockName, txnId, Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
             }
             waiter.resume(); // should not get here
@@ -154,8 +156,9 @@ class LockManagerTest {
         lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
+            int txnId = 2;
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.SHARED);
+                lm.lock(lockName, txnId, Lock.LockMode.SHARED);
             } catch (DeadlockException e) {
             }
 
@@ -184,8 +187,9 @@ class LockManagerTest {
         lm.lock(lockName, txn, Lock.LockMode.EXCLUSIVE);
 
         new Thread(() -> {
+            int txnId = 2;
             try {
-                lm.lock(lockName, new Transaction(2), Lock.LockMode.EXCLUSIVE);
+                lm.lock(lockName, txnId, Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
             }
 

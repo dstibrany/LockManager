@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-class Lock {
+public class Lock {
     private final Set<Transaction> owners = new HashSet<>();
     private final ReentrantLock lock = new ReentrantLock(true);
     private final Condition waiters = lock.newCondition();
@@ -115,7 +115,7 @@ class Lock {
         return sLockCount > 0;
     }
 
-    enum LockMode {
+    public enum LockMode {
         SHARED,
         EXCLUSIVE
     }

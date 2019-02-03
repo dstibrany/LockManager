@@ -1,11 +1,11 @@
 package com.dstibrany.lockmanager;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LockManager {
     private ConcurrentHashMap<Integer, Lock> lockTable = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Transaction, ArrayList<Lock>> txnTable = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, Transaction> txnTable = new ConcurrentHashMap<>();
     private WaitForGraph waitForGraph;
 
     public LockManager() {
@@ -16,49 +16,53 @@ public class LockManager {
         waitForGraph = new WaitForGraph(deadlockDetectorInitialDelay, deadlockDetectorDelay);
     }
 
-    public void lock(Integer lockName, Transaction txn, Lock.LockMode requestedMode) throws DeadlockException {
+    public void lock(int lockName, int txnId, Lock.LockMode requestedMode) throws DeadlockException {
         lockTable.putIfAbsent(lockName, new Lock(waitForGraph));
         Lock lock = lockTable.get(lockName);
+        Transaction txn = txnTable.getOrDefault(txnId, new Transaction(txnId));
 
         try {
-            if (requestedMode == Lock.LockMode.SHARED && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
+            if (requestedMode == Lock.LockMode.SHARED && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
                 return;
-            } else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.EXCLUSIVE) {
+            } else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.EXCLUSIVE) {
                 return;
-            } else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txn, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
+            } else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
                 lock.upgrade(txn);
             } else {
                 lock.acquire(txn, requestedMode);
             }
         } catch (InterruptedException e) {
-            removeTransaction(txn);
+            removeTransaction(txnId);
             throw new DeadlockException(e);
         }
 
-        txnTable.putIfAbsent(txn, new ArrayList<>());
-        ArrayList<Lock> txnLockList = txnTable.get(txn);
-        txnLockList.add(lock);
-        txnTable.put(txn, txnLockList);
+        txn.addLock(lock);
+        txnTable.putIfAbsent(txnId, txn);
     }
 
-    public void removeTransaction(Transaction txn) {
-        ArrayList<Lock> txnLockList = txnTable.get(txn);
+    public void removeTransaction(int txnId) {
+        Transaction txn = txnTable.get(txnId);
+        if (txn == null) return;
+        List<Lock> txnLockList = txn.getLocks();
 
         for (Lock lock : txnLockList) {
             lock.release(txn);
         }
 
-        txnTable.remove(txn);
+        txnTable.remove(txnId);
     }
 
-    boolean hasLock(Transaction txn, Integer lockName) {
-        ArrayList<Lock> lockList = txnTable.get(txn);
+    // TODO: does this work concurrently?
+    boolean hasLock(int txnId, int lockName) {
         Lock lock = lockTable.get(lockName);
-
+        Transaction txn = txnTable.get(txnId);
+        if (txn == null) return false;
+        List<Lock> lockList = txn.getLocks();
         if (lockList == null) return false;
+
         boolean found = false;
 
-        for (Lock txnLock : txnTable.get(txn)) {
+        for (Lock txnLock : lockList) {
             if (txnLock == lock) found = true;
         }
 

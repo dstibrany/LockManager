@@ -22,7 +22,7 @@ class DeadlockTest {
         Waiter waiter2 = new Waiter();
 
         Thread t1 = new Thread(() -> {
-            Transaction txn1 = new Transaction(1);
+            int txn1 = 1;
             try {
                 lm.lock(lockA, txn1, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -36,7 +36,7 @@ class DeadlockTest {
         });
 
         Thread t2 = new Thread(() -> {
-            Transaction txn2 = new Transaction(2);
+            int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -71,7 +71,7 @@ class DeadlockTest {
         Waiter waiter3 = new Waiter();
 
         Thread t1 = new Thread(() -> {
-            Transaction txn1 = new Transaction(1);
+            int txn1 = 1;
             try {
                 lm.lock(lockA, txn1, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -85,7 +85,7 @@ class DeadlockTest {
         });
 
         Thread t2 = new Thread(() -> {
-            Transaction txn2 = new Transaction(2);
+            int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -99,7 +99,7 @@ class DeadlockTest {
         });
 
         Thread t3 = new Thread(() -> {
-            Transaction txn3 = new Transaction(3);
+            int txn3 = 3;
             try {
                 lm.lock(lockC, txn3, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -135,7 +135,7 @@ class DeadlockTest {
         Waiter waiter3 = new Waiter();
 
         Thread t1 = new Thread(() -> {
-            Transaction txn1 = new Transaction(1);
+            int txn1 = 1;
             try {
                 lm.lock(lockA, txn1, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -149,7 +149,7 @@ class DeadlockTest {
         });
 
         Thread t2 = new Thread(() -> {
-            Transaction txn2 = new Transaction(2);
+            int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -163,7 +163,7 @@ class DeadlockTest {
         });
 
         Thread t3 = new Thread(() -> {
-            Transaction txn3 = new Transaction(3);
+            int txn3 = 3;
             try {
                 lm.lock(lockB, txn3, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn3);
@@ -196,7 +196,7 @@ class DeadlockTest {
         Waiter waiter2 = new Waiter();
 
         Thread t1 = new Thread(() -> {
-            Transaction txn1 = new Transaction(1);
+            int txn1 = 1;
             try {
                 lm.lock(lockA, txn1, Lock.LockMode.SHARED);
                 lm.removeTransaction(txn1);
@@ -205,7 +205,7 @@ class DeadlockTest {
             }
         });
         Thread t2 = new Thread(() -> {
-            Transaction txn2 = new Transaction(2);
+            int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.SHARED);
                 lm.removeTransaction(txn2);
@@ -236,7 +236,7 @@ class DeadlockTest {
         Waiter waiter4 = new Waiter();
 
         Thread t1 = new Thread(() -> {
-            Transaction txn1 = new Transaction(1);
+            int txn1 = 1;
             try {
                 lm.lock(lockA, txn1, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -249,7 +249,7 @@ class DeadlockTest {
             }
         });
         Thread t2 = new Thread(() -> {
-            Transaction txn2 = new Transaction(2);
+            int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -264,7 +264,7 @@ class DeadlockTest {
         });
 
         Thread t3 = new Thread(() -> {
-            Transaction txn3 = new Transaction(3);
+            int txn3 = 3;
             try {
                 lm.lock(lockC, txn3, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
@@ -278,7 +278,7 @@ class DeadlockTest {
             }
         });
         Thread t4 = new Thread(() -> {
-            Transaction txn4 = new Transaction(4);
+            int txn4 = 4;
             try {
                 lm.lock(lockD, txn4, Lock.LockMode.EXCLUSIVE);
                 Thread.sleep(100);
