@@ -2,6 +2,24 @@ plugins {
     id 'java'
 }
 
+repositories {
+    mavenCentral()
+}
+
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
-version = '1.2.1'
+version = '1.0.0'
+
+test {
+    useJUnitPlatform()
+    dependsOn 'cleanTest'
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+dependencies {
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2", )
+    testCompile("net.jodah:concurrentunit:0.4.4")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.3.2")
+}
