@@ -18,9 +18,9 @@ public class Lock {
     }
 
     void acquire(Transaction txn, LockMode lockMode) throws InterruptedException {
-        if (LockMode.SHARED == lockMode) {
+        if (lockMode == LockMode.SHARED) {
             acquireSLock(txn);
-        } else if (LockMode.EXCLUSIVE == lockMode) {
+        } else if (lockMode == LockMode.EXCLUSIVE) {
             acquireXLock(txn);
         } else {
             throw new RuntimeException("Lock mode does not exist");

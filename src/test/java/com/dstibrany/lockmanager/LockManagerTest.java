@@ -223,4 +223,12 @@ class LockManagerTest {
             assertFalse(lm.hasLock(txn, lockName));
         }
     }
+
+    @Test
+    void unlock() throws DeadlockException {
+        lm.lock(lockName, txn, Lock.LockMode.SHARED);
+        assertTrue(lm.hasLock(txn, lockName));
+        lm.unlock(lockName, txn);
+        assertFalse(lm.hasLock(txn, lockName));
+    }
 }

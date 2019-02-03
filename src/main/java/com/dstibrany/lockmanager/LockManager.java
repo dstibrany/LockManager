@@ -40,6 +40,15 @@ public class LockManager {
         txnTable.putIfAbsent(txnId, txn);
     }
 
+    public void unlock(int lockName, int txnId) {
+        Transaction txn = txnTable.get(txnId);
+        Lock lock = lockTable.get(lockName);
+        if (lock != null) {
+            lock.release(txn);
+        }
+        txn.removeLock(lock);
+    }
+
     public void removeTransaction(int txnId) {
         Transaction txn = txnTable.get(txnId);
         if (txn == null) return;
@@ -53,8 +62,7 @@ public class LockManager {
     }
 
     // TODO: does this work concurrently?
-    boolean hasLock(int txnId, int lockName) {
-        Lock lock = lockTable.get(lockName);
+    public boolean hasLock(int txnId, int lockName) {
         Transaction txn = txnTable.get(txnId);
         if (txn == null) return false;
         List<Lock> lockList = txn.getLocks();
@@ -63,7 +71,7 @@ public class LockManager {
         boolean found = false;
 
         for (Lock txnLock : lockList) {
-            if (txnLock == lock) found = true;
+            if (txnLock == lockTable.get(lockName)) found = true;
         }
 
         return found;

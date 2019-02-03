@@ -25,6 +25,10 @@ class Transaction implements Comparable {
         lockList.add(lock);
     }
 
+    void removeLock(Lock lock) {
+        lockList.remove(lock);
+    }
+
     void abort() {
         txnThread.interrupt();
     }
