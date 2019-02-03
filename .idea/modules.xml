@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/LockManager.iml" filepath="$PROJECT_DIR$/LockManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LockManager.main.iml" filepath="$PROJECT_DIR$/.idea/modules/LockManager.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LockManager.test.iml" filepath="$PROJECT_DIR$/.idea/modules/LockManager.test.iml" />
+    </modules>
+  </component>
+</project>
