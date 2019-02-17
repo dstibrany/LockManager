@@ -22,9 +22,9 @@ public class LockManager {
         Transaction txn = txnTable.getOrDefault(txnId, new Transaction(txnId));
 
         try {
-            if (requestedMode == Lock.LockMode.SHARED && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
+            if (hasLock(txnId, lockName) && (requestedMode == lock.getMode())) {
                 return;
-            } else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.EXCLUSIVE) {
+            } else if (requestedMode == Lock.LockMode.SHARED && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.EXCLUSIVE) {
                 return;
             } else if (requestedMode == Lock.LockMode.EXCLUSIVE && hasLock(txnId, lockName) && lock.getMode() == Lock.LockMode.SHARED) {
                 lock.upgrade(txn);
