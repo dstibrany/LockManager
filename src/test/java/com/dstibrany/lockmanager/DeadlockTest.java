@@ -9,13 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class DeadlockTest {
-
-    private final int DEADLOCK_DETECTOR_INITIAL_DELAY = 300;
-    private final int DEADLOCK_DETECTOR_DELAY = 5000;
-
     @Test
-    void twoWayDeadLock() {
-        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
+    void twoWayDeadLock() throws Exception {
+        LockManager lm = new LockManager();
         int lockA = 99;
         int lockB = 100;
         Waiter waiter1 = new Waiter();
@@ -39,7 +35,7 @@ class DeadlockTest {
             int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
-                Thread.sleep(100);
+                Thread.sleep(120);
                 lm.lock(lockA, txn2, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn2);
                 waiter2.fail("Txn2 should have been aborted by the deadlock detector");
@@ -50,6 +46,7 @@ class DeadlockTest {
         });
 
         t1.start();
+        Thread.sleep(10);
         t2.start();
 
         try {
@@ -61,8 +58,8 @@ class DeadlockTest {
     }
 
     @Test
-    void threeWayDeadlock() {
-        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
+    void threeWayDeadlock() throws Exception {
+        LockManager lm = new LockManager();
         int lockA = 99;
         int lockB = 100;
         int lockC = 101;
@@ -88,7 +85,7 @@ class DeadlockTest {
             int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
-                Thread.sleep(100);
+                Thread.sleep(110);
                 lm.lock(lockC, txn2, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn2);
                 waiter2.resume();
@@ -102,7 +99,7 @@ class DeadlockTest {
             int txn3 = 3;
             try {
                 lm.lock(lockC, txn3, Lock.LockMode.EXCLUSIVE);
-                Thread.sleep(100);
+                Thread.sleep(120);
                 lm.lock(lockA, txn3, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn3);
                 waiter3.fail("Txn3 should have been aborted by the deadlock detector");
@@ -113,7 +110,9 @@ class DeadlockTest {
         });
 
         t1.start();
+        Thread.sleep(10);
         t2.start();
+        Thread.sleep(10);
         t3.start();
 
         try {
@@ -127,7 +126,7 @@ class DeadlockTest {
 
     @Test
     void nonDeadlockedTransactionGetsUnblocked() throws Exception {
-        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
+        LockManager lm = new LockManager();
         int lockA = 99;
         int lockB = 100;
         Waiter waiter1 = new Waiter();
@@ -152,7 +151,7 @@ class DeadlockTest {
             int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
-                Thread.sleep(100);
+                Thread.sleep(120);
                 lm.lock(lockA, txn2, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn2);
                 waiter2.fail("Txn2 should have been aborted by the deadlock detector");
@@ -174,6 +173,7 @@ class DeadlockTest {
         });
 
         t1.start();
+        Thread.sleep(10);
         t2.start();
         Thread.sleep(20);
         t3.start();
@@ -189,7 +189,7 @@ class DeadlockTest {
 
     @Test
     void notAbortedIfNotDeadlocked() {
-        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
+        LockManager lm = new LockManager();
         int lockA = 99;
         int lockB = 100;
         Waiter waiter1 = new Waiter();
@@ -218,14 +218,14 @@ class DeadlockTest {
         t2.start();
 
         assertThrows(TimeoutException.class, () -> {
-            waiter1.await(600);
-            waiter2.await(600);
+            waiter1.await(300);
+            waiter2.await(300);
         }, "Deadlock detector should not have aborted either transaction");
     }
 
     @Test
-    void multipleDeadlocks() {
-        LockManager lm = new LockManager(DEADLOCK_DETECTOR_INITIAL_DELAY, DEADLOCK_DETECTOR_DELAY);
+    void multipleDeadlocks() throws Exception {
+        LockManager lm = new LockManager();
         int lockA = 99;
         int lockB = 100;
         int lockC = 101;
@@ -252,7 +252,7 @@ class DeadlockTest {
             int txn2 = 2;
             try {
                 lm.lock(lockB, txn2, Lock.LockMode.EXCLUSIVE);
-                Thread.sleep(100);
+                Thread.sleep(120);
                 lm.lock(lockA, txn2, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn2);
                 waiter2.fail("Txn2 should have been aborted by DL detector");
@@ -281,7 +281,7 @@ class DeadlockTest {
             int txn4 = 4;
             try {
                 lm.lock(lockD, txn4, Lock.LockMode.EXCLUSIVE);
-                Thread.sleep(100);
+                Thread.sleep(120);
                 lm.lock(lockC, txn4, Lock.LockMode.EXCLUSIVE);
                 lm.removeTransaction(txn4);
                 waiter4.fail("Txn4 should have been aborted by DL detector");
@@ -292,8 +292,10 @@ class DeadlockTest {
         });
 
         t1.start();
+        Thread.sleep(10);
         t2.start();
         t3.start();
+        Thread.sleep(10);
         t4.start();
 
         try {
@@ -310,4 +312,50 @@ class DeadlockTest {
             fail("Deadlock was not properly detected between txn3 and txn4");
         }
     }
+
+    @Test
+    void upgradeDoesNotCauseDeadlock() {
+        LockManager lm = new LockManager();
+        int lockA = 99;
+        Waiter waiter1 = new Waiter();
+        Waiter waiter2 = new Waiter();
+
+        Thread t1 = new Thread(() -> {
+            int txn1 = 1;
+            try {
+                lm.lock(lockA, txn1, Lock.LockMode.SHARED);
+                Thread.sleep(100);
+                lm.lock(lockA, txn1, Lock.LockMode.EXCLUSIVE);
+                lm.removeTransaction(txn1);
+                waiter1.resume();
+            } catch (DeadlockException e) {
+                waiter1.fail("Txn1 should not have been aborted by deadlock detector");
+            } catch (InterruptedException e) {
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            int txn2 = 2;
+            try {
+                lm.lock(lockA, txn2, Lock.LockMode.SHARED);
+                Thread.sleep(200);
+                lm.removeTransaction(txn2);
+                waiter2.resume();
+            } catch (DeadlockException e) {
+                waiter2.fail("Txn2 should not have been aborted by the deadlock detector");
+            } catch (InterruptedException e) {
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        try {
+            waiter1.await(2000);
+            waiter2.await(2000);
+        } catch (TimeoutException e) {
+            fail("Transactions should not have deadlocked");
+        }
+    }
+
 }

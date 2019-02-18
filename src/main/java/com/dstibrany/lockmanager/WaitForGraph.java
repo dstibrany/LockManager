@@ -13,17 +13,6 @@ class WaitForGraph {
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final Lock sharedLock = rwl.readLock();
     private final Lock exclusiveLock = rwl.readLock();
-    private DeadlockDetector deadlockDetector;
-
-    WaitForGraph() {
-        deadlockDetector = new DeadlockDetector();
-        deadlockDetector.start();
-    }
-
-    WaitForGraph(int deadlockDetectorInitialDelay, int deadlockDetectorDelay) {
-        deadlockDetector = new DeadlockDetector(deadlockDetectorInitialDelay, deadlockDetectorDelay);
-        deadlockDetector.start();
-    }
 
     void add(Transaction predecessor, Set<Transaction> successors) {
         sharedLock.lock();
@@ -63,43 +52,22 @@ class WaitForGraph {
         }
     }
 
+    void detectDeadlock(Transaction currentTxn) {
+        List<List<Transaction>> cycles = findCycles();
+
+        for (List<Transaction> cycleGroup : cycles) {
+            if (cycleGroup.contains(currentTxn)) {
+                currentTxn.abort();
+            }
+        }
+    }
+
     private void removeSuccessor(Transaction txnToRemove) {
         for (Transaction predecessor : adjacencyList.keySet()) {
             Set<Transaction> successors = adjacencyList.get(predecessor);
             if (successors != null) {
                 successors.remove(txnToRemove);
             }
-        }
-    }
-
-    class DeadlockDetector {
-        private final int DEFAULT_INITIAL_DELAY = 1000;
-        private final int DEFAULT_DELAY = 5000;
-        private int initialDelay;
-        private int delay;
-
-        DeadlockDetector() {
-            this.initialDelay = DEFAULT_INITIAL_DELAY;
-            this.delay = DEFAULT_DELAY;
-        }
-
-        DeadlockDetector(int initialDelay, int delay) {
-            this.initialDelay = initialDelay;
-            this.delay = delay;
-        }
-
-        void start() {
-            ScheduledExecutorService es = newSingleThreadScheduledExecutor();
-            es.scheduleWithFixedDelay(() -> {
-                List<List<Transaction>> cycles = findCycles();
-
-                // XXX: DL resolution strategy is to abort the newest transaction, based on ID.
-                for (List<Transaction> cycleGroup : cycles) {
-                    Optional<Transaction> newestTxn = cycleGroup.stream().max(Transaction::compareTo);
-                    newestTxn.ifPresent(Transaction::abort);
-                }
-
-            }, initialDelay, delay, TimeUnit.MILLISECONDS);
         }
     }
 

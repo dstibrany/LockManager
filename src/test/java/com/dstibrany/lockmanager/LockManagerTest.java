@@ -105,12 +105,13 @@ class LockManagerTest {
                 lm.lock(lockName, txnId, Lock.LockMode.SHARED);
                 lm.lock(lockName, txnId, Lock.LockMode.EXCLUSIVE);
             } catch (DeadlockException e) {
+                waiter.fail("A deadlock should not have been detected");
             }
             waiter.resume(); // should not get here
         }).start();
 
         assertThrows(TimeoutException.class, () -> {
-            waiter.await(10);
+            waiter.await(100);
         }, "Lock was acquired, but should have been blocked");
     }
 

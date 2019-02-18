@@ -12,10 +12,6 @@ public class LockManager {
         waitForGraph = new WaitForGraph();
     }
 
-    public LockManager(int deadlockDetectorInitialDelay, int deadlockDetectorDelay) {
-        waitForGraph = new WaitForGraph(deadlockDetectorInitialDelay, deadlockDetectorDelay);
-    }
-
     public void lock(int lockName, int txnId, Lock.LockMode requestedMode) throws DeadlockException {
         lockTable.putIfAbsent(lockName, new Lock(waitForGraph));
         Lock lock = lockTable.get(lockName);

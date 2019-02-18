@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class Lock {
     private final Set<Transaction> owners = new HashSet<>();
@@ -51,7 +52,9 @@ public class Lock {
         try {
             if (owners.contains(txn) && isXLocked()) return;
             while (isXLocked() || sLockCount > 1) {
-                waitForGraph.add(txn, owners);
+                Set<Transaction> ownersWithSelfRemoved = owners.stream().filter((ownerTxn) -> !ownerTxn.equals(txn)).collect(Collectors.toSet());
+                waitForGraph.add(txn, ownersWithSelfRemoved);
+                waitForGraph.detectDeadlock(txn);
                 waiters.await();
             }
             sLockCount = 0;
@@ -84,6 +87,7 @@ public class Lock {
         try {
             while (isXLocked() || lock.hasWaiters(waiters)) {
                 waitForGraph.add(txn, owners);
+                waitForGraph.detectDeadlock(txn);
                 waiters.await();
             }
             sLockCount++;
@@ -98,6 +102,7 @@ public class Lock {
         try {
             while (isXLocked() || isSLocked()) {
                 waitForGraph.add(txn, owners);
+                waitForGraph.detectDeadlock(txn);
                 waiters.await();
             }
             xLockCount = 1;

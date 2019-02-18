@@ -6,7 +6,6 @@ import java.util.Objects;
 
 class Transaction implements Comparable {
     private int id;
-    private Thread txnThread = Thread.currentThread();
     private List<Lock> lockList = new ArrayList<>();
 
     Transaction(int id) {
@@ -30,7 +29,7 @@ class Transaction implements Comparable {
     }
 
     void abort() {
-        txnThread.interrupt();
+        Thread.currentThread().interrupt();
     }
 
     @Override
