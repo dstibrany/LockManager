@@ -1,6 +1,6 @@
 package com.dstibrany.lockmanager;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LockManager {
@@ -48,7 +48,7 @@ public class LockManager {
     public void removeTransaction(int txnId) {
         Transaction txn = txnTable.get(txnId);
         if (txn == null) return;
-        List<Lock> txnLockList = txn.getLocks();
+        Set<Lock> txnLockList = txn.getLocks();
 
         for (Lock lock : txnLockList) {
             lock.release(txn);
@@ -61,7 +61,7 @@ public class LockManager {
     public boolean hasLock(int txnId, int lockName) {
         Transaction txn = txnTable.get(txnId);
         if (txn == null) return false;
-        List<Lock> lockList = txn.getLocks();
+        Set<Lock> lockList = txn.getLocks();
         if (lockList == null) return false;
 
         boolean found = false;

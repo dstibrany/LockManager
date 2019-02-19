@@ -1,12 +1,12 @@
 package com.dstibrany.lockmanager;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 class Transaction implements Comparable {
     private int id;
-    private List<Lock> lockList = new ArrayList<>();
+    private Set<Lock> lockList = new HashSet<>();
 
     Transaction(int id) {
         this.id = id;
@@ -16,7 +16,7 @@ class Transaction implements Comparable {
         return id;
     }
 
-    List<Lock> getLocks() {
+    Set<Lock> getLocks() {
         return lockList;
     }
 
