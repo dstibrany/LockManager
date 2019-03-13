@@ -23,24 +23,24 @@ When a transaction is blocked trying to acquire a lock, a deadlock detection alg
 ```
 void lock(int lockName, int txnId, Lock.LockMode requestedMode);
 ```
-Acquire a lock on `lockName` on behalf of transaction `txnId`. Hashcodes should be used to represent `lockName` and `txnId`.
+Acquire a lock on behalf of a transaction. Hashcodes should be used to represent `lockName` and `txnId`.
 
-`requestedMode` can be one of {`Lock.LockMode.SHARED`, `Lock.LockMode.EXCLUSIVE`} 
+`requestedMode` can be one of `Lock.LockMode.SHARED`, `Lock.LockMode.EXCLUSIVE` 
 
 ```
 void unlock(int lockName, int txnId);
 ```
-Release a lock on `lockName` on behalf of transaction `txnId`. Hashcodes should be used to represent `lockName` and `txnId`.
+Release a lock behalf of a transaction. Hashcodes should be used to represent `lockName` and `txnId`.
 
 ```
 void removeTransaction(int txnId);
 ```
-Release all locks associated with transaction `txnId`. A hashcode should be used to represent `txnId`.
+Release all locks associated with a transaction. A hashcode should be used to represent `txnId`.
 
 ```
 boolean hasLock(int txnId, int lockName);
 ```
-Check if a lock on `lockName` on behalf of transaction `txnId` is held. Hashcodes should be used to represent `lockName` and `txnId`.
+Check if a lock is held on behalf of a transaction. Hashcodes should be used to represent `lockName` and `txnId`.
 
 ##Building
 
