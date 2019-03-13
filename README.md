@@ -2,7 +2,7 @@
 
 This is a generic Lock Manager that can be used to implement Two-phase locking (2PL). It can be embedded in another system, like a relational database, as a standalone library.
 
-## *Assumptions*
+## Assumptions
 This library relies on the assumption that each transaction is executed in its own thread. This library is not thread-safe if a specific transaction is run across multiple threads.
 
 ## Concurrency
@@ -42,7 +42,7 @@ boolean hasLock(int txnId, int lockName);
 ```
 Check if a lock is held on behalf of a transaction. Hashcodes should be used to represent `lockName` and `txnId`.
 
-##Building
+## Building
 
 To build:
 ```
