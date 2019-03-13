@@ -17,6 +17,7 @@ When a transaction is blocked trying to acquire a lock, a deadlock detection alg
 - Locks can be upgraded. If a transaction holds a shared lock, it can be upgraded to an exclusive lock without needing to release the shared lock.
 - Locks are acquired in FIFO order.
 - Barging is prevented. That is, a transaction waiting on an exclusive lock will not be indefinitely prevented from acquiring the lock by a constant stream of read lock requests.
+- Thorough test suite including concurrent tests for mutual exclusion and deadlock detection.
 
 ## API  
 
