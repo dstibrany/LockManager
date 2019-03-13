@@ -57,7 +57,6 @@ public class LockManager {
         txnTable.remove(txnId);
     }
 
-    // TODO: does this work concurrently?
     public boolean hasLock(int txnId, int lockName) {
         Transaction txn = txnTable.get(txnId);
         if (txn == null) return false;
